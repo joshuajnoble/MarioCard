@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+
+
+    <meta id="viewport" name="viewport" content ="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    </head>
+    <style type="text/css">
+      .control {
+        height: 200px;
+        width: 200px;
+        margin-top: 50px;
+      }
+
+      .left {
+        float: left;
+        margin-left: 50px;
+      }
+      .right {
+        float: right;
+        margin-right: 50px;
+      }
+    </style>
+    <body>
+
+      <div class="control left">
+        <fieldset data-width="200" data-height="250" data-cols="1" data-min="-127" data-max="127" data-mid="0" data-fgColor="#ff0000">
+          <input value="0">
+        </fieldset>
+      </div>
+
+      <div class="control right">
+        <fieldset data-width="200" data-height="250" data-cols="1" data-min="-127" data-max="127" data-mid="0" data-fgColor="#ff0000">
+          <input value="0">
+        </fieldset>
+      </div>
+
+      <script src="public/javascripts/libs/jquery-1.8.0.min.js" type="text/javascript"></script>
+      <script src="public/javascripts/libs/jquery.kontrol.js" type="text/javascript"></script>
+      <script type="text/javascript">
+
+        var offsetValue = 127;
+
+        var ws = new WebSocket("ws://10.118.73.111:3000/");
+        ws.onopen = function() {
+          console.log(" onopen ");
+        };
+        ws.onmessage = function() {
+          console.log("message");
+        };
+
+        $(function () {
+          $(".left fieldset").bars({
+              fgColor:"#222222"
+            , bgColor:"#00ff00"
+            , displayMidLine: true
+            , change: function (val) {
+                ws.send("left:" + (val[0] + offsetValue));
+            }
+          });
+          $(".right fieldset").bars({
+              fgColor:"#222222"
+            , bgColor:"#00ff00"
+            , displayMidLine: true
+            , change: function (val) {
+                ws.send("right:" + (val[0] + offsetValue));
+            }
+          });
+        });
+
+        touchmove
+
+      </script>
+
+    </body>
+</html>
