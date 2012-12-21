@@ -39,6 +39,7 @@ import java.util.List;
 KetaiSensor sensor;
 PVector gyro, accelerometer;
 float light, proximity;
+int lastMillis;
 
 SensorFuse sensorFuse;
 WebSocketClient client;
@@ -108,17 +109,34 @@ void draw()
     , 20, 0, width, height);
     
     
+   if( millis() - lastMillis > 100) 
+   {
+     sensorFuse.runFusion();
+     lastMillis = millis();
+   }
+    
 }
 
 void onAccelerometerEvent(float x, float y, float z, long time, int accuracy)
 {
   accelerometer.set(x, y, z);
+  
+  // add in gyro:
+  float fusionTiming = millis() / 1000.0;
+  float[] xyz = {x, y, z};
+  sensorFuse.gyroFunction( xyz, fusionTiming);
+  calculateAccMagOrientation();  
 }
 
 void onGyroscopeEvent(float x, float y, float z)
 {
   gyro.set(x, y, z);
   
+  // now do fusion
+  float fusionTiming = millis() / 1000.0;
+  float[] xyz = {x, y, z};
+  sensorFuse.gyroFunction( xyz, fusionTiming);
+  calculateAccMagOrientation();  
 }
 
 public void mousePressed() { 
