@@ -65,7 +65,7 @@ class MarioKardApp : public AppCocoaTouch {
 	virtual void	resize( int width, int height );
 	virtual void	update();
 	virtual void	draw();
-	virtual void	mouseDown( ci::app::MouseEvent event );
+	void touchesMoved(cinder::app::TouchEvent event);
     virtual void    shutdown();
 		
 	ci::Matrix44f	mCubeRotation;
@@ -84,10 +84,12 @@ class MarioKardApp : public AppCocoaTouch {
     int cachedLeftTread, cachedRightTread;
     
     const float rollRatio;
+    float treadSpeed;
     
 };
 
 MarioKardApp::MarioKardApp():rollRatio(0.8105694691387) {
+    uri = "10.118.73.25:3000";
 }
 
 void MarioKardApp::setup()
@@ -100,7 +102,7 @@ void MarioKardApp::setup()
         endpoint.alog().unset_level(websocketpp::log::alevel::ALL);
         endpoint.elog().unset_level(websocketpp::log::elevel::ALL);
         
-        con = endpoint.connect(uri+"getCaseCount");
+        con = endpoint.connect(uri);
         
         endpoint.run();
         
@@ -140,11 +142,6 @@ void MarioKardApp::resize( int width, int height )
 	mCam.setPerspective( 60, width / (float)height, 1, 1000 );
 }
 
-void MarioKardApp::mouseDown( MouseEvent event )
-{
-	std::cout << "Mouse down @ " << event.getPos() << std::endl;
-}
-
 void MarioKardApp::update()
 {
 	//mCubeRotation.rotate( Vec3f( 1, 1, 1 ), 0.03f );
@@ -161,32 +158,51 @@ void MarioKardApp::update()
     // values we'll be sending over to 
     float leftTread = 122, rightTread = 122;
     
-    // first speed, direction matters
-    leftTread *= cubeQuat.getRoll() * rollRatio;
-    rightTread *= cubeQuat.getRoll() * rollRatio;
+    //console() << " quat " << cubeQuat.getYaw() << " " << cubeQuat.getRoll()<< " " << cubeQuat.getPitch() << std::endl;
+    console() << cubeQuat.getRoll()<< " " << cubeQuat.getPitch() << std::endl;
+
+    float roll = cubeQuat.getRoll();
     
-    // quat.z is -1.67 all the way to the left, 1.67 all the way to the right
-    leftTread += (122.f * abs(math<float>::min(1.67, cubeQuat.getPitch())/1.67));
-    rightTread += (122.f * (math<float>::min(1.67, cubeQuat.getPitch()) / 1.67));
+    // wretched hack linear mapping for steering - effing suck
+    // roll() is 2.8 all the way to the left, -0.6 all the way to the right
+    if( roll < 1.0) { // turning left
+        if( treadSpeed < 0) { // going backwards
+            
+            leftTread = 127 + (127 * treadSpeed);
+            rightTread = lmap<float>( roll, 1, 2.8, 0, 142 );
+        } else { // going fowards
+            
+            leftTread  = (127 * treadSpeed) + 127;
+            rightTread = lmap<float>( roll, -0.8, 1.0, 102, 255 );
+        }
+    } else if(roll > 1.0) {  // turning right
+        if( treadSpeed < 0) { // going backwards
+            
+            leftTread = lmap<float>( roll, 1, 2.8, 0, 142 );
+            rightTread = 127 + (127 * treadSpeed);
+            
+        } else { // going forwards
+            leftTread = lmap<float>( roll, 1.0, 2.8, 255, 102 );
+            rightTread = (127 * treadSpeed) + 127;
+        }
+    }
     
     std::stringstream payload;
     payload << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
     
-    con->send(payload.str());
+    console() << " payload " << payload.str();
+    
+    if(con) {
+        con->send(payload.str());
+    }
     
 }
 
 void MarioKardApp::draw()
 {
-	gl::clear( Color( 0.2f, 0.2f, 0.3f ) );
-	gl::enableDepthRead();
-	
-	mTex.bind();
-	gl::setMatrices( mCam );
-	glPushMatrix();
-		gl::multModelView( mCubeRotation );
-		gl::drawCube( Vec3f::zero(), Vec3f( 2.0f, 2.0f, 2.0f ) );
-	glPopMatrix();
+    gl::clear();
+    Rectf rect(getWindowWidth() * (treadSpeed / 2.0) - 20, 0, getWindowWidth() * (treadSpeed / 2.0) + 20, getWindowHeight());
+    gl::drawSolidRect(rect);
 }
 
 void MarioKardApp::shutdown()
@@ -194,6 +210,25 @@ void MarioKardApp::shutdown()
     [motionManager stopDeviceMotionUpdates];
     [motionManager release];
     [referenceAttitude release];
+}
+
+void MarioKardApp::touchesMoved(cinder::app::TouchEvent event)
+{
+    
+    int largestDiffY = 0, ind = 0;
+    
+    for(int i = 0; i < event.getTouches().size(); i++) {
+        
+        int d = abs(event.getTouches()[i].getPrevX() - event.getTouches()[i].getX());
+        if(d > largestDiffY) {
+            largestDiffY = d;
+            ind = i;
+        }
+    }
+    
+    // calculate the position
+    treadSpeed = (event.getTouches()[ind].getX() * 2.f / getWindowWidth());
+    
 }
 
 
