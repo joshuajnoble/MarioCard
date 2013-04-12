@@ -93,7 +93,7 @@ const char mySSID[] = "frogwirelessext";
 const char myPassword[] = "friedolin";
 
 const int PORT = 3000;
-const char IP[] = "10.118.73.72";
+const char IP[] = "10.118.73.84";
 long lastCheck;
 
 WiFly wifly;
