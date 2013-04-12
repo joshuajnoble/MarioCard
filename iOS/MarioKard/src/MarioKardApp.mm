@@ -226,7 +226,7 @@ void MarioKardApp::update()
         } else { // going fowards WORKS
             
             rightTread  = math<float>::clamp(STOPPED + (STOPPED * normalizedTreadSpeed), STOPPED, FULL_SPEED_FWD); // to 255
-            leftTread = (STOPPED * normalizedTreadSpeed + STOPPED) - ( (roll - 0.1) * STOPPED);
+            leftTread = (STOPPED * normalizedTreadSpeed + STOPPED) - ( roll  * STOPPED);
         }
     } else {  // turning right
         if( treadSpeed < 0) { // going backwards
@@ -259,9 +259,9 @@ void MarioKardApp::draw()
     gl::clear();
     
     gl::rotate(90);
-    gl::translate(100, -640);
+    gl::translate(0, -640);
     gl::draw( bg );
-    gl::translate(-100, 640);
+    gl::translate(0, 640);
     gl::rotate(-90);
     
     Rectf rect(getWindowWidth() * (treadSpeed + 0.5) - 20, -100, getWindowWidth() * (treadSpeed + 0.5) + 20, getWindowHeight() + 100);
