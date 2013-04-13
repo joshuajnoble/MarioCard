@@ -124,7 +124,8 @@ class WebSocketsHandler(SocketServer.StreamRequestHandler):
         else:
 
             if self.receivedMessage.find("color") != -1:
-                self.server.getColor(self, message)
+                colorSent = self.receivedMessage.split(':')[1]
+                self.server.getColor(self, colorSent)
 	        self.receivedMessage = ""
 
 

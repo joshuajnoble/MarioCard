@@ -95,6 +95,7 @@ const char myPassword[] = "friedolin";
 const int PORT = 3000;
 const char IP[] = "10.118.73.84";
 long lastCheck;
+int lastColor;
 
 WiFly wifly;
 
@@ -204,7 +205,6 @@ void setup()
 }
 
 
-//
 void loop()
 {
   digitalWrite(ledPin, HIGH);
@@ -267,7 +267,14 @@ void loop()
   if(lastCheck - millis() > 100) {
     lastCheck = millis();
     getRGBC();
-    checkColors();
+    lastColor = checkColors();
+    if(lastColor != -1) {
+      char msg[8] = "color:";
+      char col;
+      itoa(lastColor, &col, 10);
+      msg[7] = col;
+      send(&msg[0]);
+    }
   }
 
 }
@@ -276,17 +283,17 @@ int checkColors()
 {
   
   // find the color we need
-  /*for( int i = 0; i < 6; i++) {
-    if( abs(colors[i][0] - COLORS[RED] ) < 20 ) {
-      if( abs(colors[i][1] - COLORS[GREEN] ) < 20 ) {
-        if( abs(colors[i][2] - COLORS[BLUE] ) < 20 ) {
-          if( abs(colors[i][3] - COLORS[CLEAR] ) < 20 ) {
-            return index;
+  for( int i = 0; i < 6; i++) {
+    if( abs(colors[i][0] - colorData[RED] ) < 20 ) {
+      if( abs(colors[i][1] - colorData[GREEN] ) < 20 ) {
+        if( abs(colors[i][2] - colorData[BLUE] ) < 20 ) {
+          if( abs(colors[i][3] - colorData[CLEAR] ) < 20 ) {
+            return i;
           }
         }
       }
     }
-  }*/
+  }
   
   return -1;
 }
