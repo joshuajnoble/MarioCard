@@ -35,6 +35,7 @@ class WebSocketsHandler(SocketServer.StreamRequestHandler):
                 length = ord(self.rfile.read(2)[1]) & 127
             except IndexError:
                 self.server.removePair(self)
+		return
 
             if length == 126:
                 length = struct.unpack(">H", self.rfile.read(2))[0]
@@ -121,11 +122,24 @@ class WebSocketsHandler(SocketServer.StreamRequestHandler):
                 self.server.routeControlSignal(self, self.receivedMessage, RIGHT)
                 self.receivedMessage = ""
 
+
+	    if self.receivedMessage.find("speed") != -1 and len(self.receivedMessage) > 12:
+		speedStart = self.receivedMessage.index("speed:")
+		lspeed = self.receivedMessage[speedStart+6:speedStart+9]
+		print " left speed " + str(lspeed)
+		self.server.routeControlSignal(self, lspeed, LEFT)
+		rspeed = self.receivedMessage[speedStart+10:speedStart+14]
+		print " right speed " + str(rspeed)
+		self.server.routeControlSignal(self, rspeed, RIGHT)
+                self.receivedMessage = ""
+
         else:
 
-            if self.receivedMessage.find("color") != -1:
+            if self.receivedMessage.find("color:") != -1 and len(self.receivedMessage) > 7:
+		print "Received a color " + self.receivedMessage
                 colorSent = self.receivedMessage.split(':')[1]
-                self.server.getColor(self, colorSent)
+		print "color sent = " + colorSent
+                self.server.getColor(self, colorSent[0])
 	        self.receivedMessage = ""
 
 
@@ -171,23 +185,27 @@ class WSServer(ThreadingTCPServer):
 
 
     def routeControlSignal(self, handler, message, side):
-        #print "control signal"
-        #print message
+        print "control signal"
+        print message
         for joint in self.jointBrowserWifly:
             if(joint['browser'] == handler):
-                #print "found handler " + str(handler.client_address)
+                print "found handler " + str(handler.client_address)
 
-                if message.partition(':')[2].isalnum():
+                '''if message.partition(':')[2].isalnum():
                     joint['cachedSpeed'][side] = int(message.partition(':')[2])
                 else:
                     tmp = message.partition(':')[2]
-                    joint['cachedSpeed'][side] = int(tmp.partition(':')[2])
+                    joint['cachedSpeed'][side] = int(tmp.partition(':')[2])'''
+		
+		joint['cachedSpeed'][side] = int(message)
+
 
                 print "cachedSpeed " + str(joint['cachedSpeed'][side])
                 joint['wifly'].send_message(self.stringify(joint['cachedSpeed'][LEFT], joint['cachedSpeed'][RIGHT]))
                 return
 
     def getColor(self, handler, message):
+	print "GET COLOR " + str(message)	
         for joint in self.jointBrowserWifly:
             if(joint['wifly'] == handler):
                 currentGameEvent = int(message)

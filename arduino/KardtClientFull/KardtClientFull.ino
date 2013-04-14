@@ -103,15 +103,16 @@ WiFly wifly;
 // COLORS
 //////////////////////////////////////////////////////////////////
 
-const int blue[] = { 884, 824, 607, 541 };
-const int red[] = { 1000, 655, 427, 534 };
-const int yellow[] = { 1023, 860, 524, 617 };
-const int orange[] = { 1023, 744, 440, 635 };
-const int green[] = { 938, 825, 427, 564 };
-const int magenta[] = { 895, 573, 403, 482 };
-const int greenLined[] = { 741, 683, 392, 487 };
+const int blue[] = { 515, 555, 732, 445 };
+//const int red[] = { 1023, 662, 580, 690 }; // sparkfun box
+//const int yellow[] = { 1023, 860, 524, 617 };
+//const int orange[] = { 921, 604, 350, 450 }; // post-it note orange
+const int green[] = { 453, 495, 306, 309 }; // business card green
+const int magenta[] = { 1023, 662, 579, 689 };
+//const int greenLined[] = { 741, 683, 392, 487 };
+const int white[] = { 1000, 1000, 1000, 1000 };
 
-const int *colors[] = { blue, red, yellow, orange, green, magenta, greenLined };
+const int *colors[] = { blue, green, magenta, white };
 
 
 //////////////////////////////////////////////////////////////////
@@ -176,8 +177,8 @@ void setup()
       wifly.terminal();
     }
 
-    Serial.println(F("Sending Hello World"));
-    send("Hello, World!");
+    //Serial.println(F("Sending Hello World"));
+    //send("Hello, World!");
 
   ////////////////////////////////////////////////////
   // COLOR SENSOR
@@ -264,16 +265,34 @@ void loop()
     motor_control( MOTOR_B, REVERSE, 127 - right);
   }
 
-  if(lastCheck - millis() > 100) {
+  if(lastCheck < millis() && lastCheck - millis() > 200) {
     lastCheck = millis();
     getRGBC();
+    
+    /*Serial.print( colorData[RED] );
+    Serial.print( " " );
+    Serial.print( colorData[GREEN] );
+    Serial.print( " " );
+    Serial.print( colorData[BLUE] );
+    Serial.print( " " );
+    Serial.println( colorData[CLEAR] );*/
+    
     lastColor = checkColors();
-    if(lastColor != -1) {
-      char msg[8] = "color:";
+    if(lastColor != -1 ) {
+      
+      lastCheck += 2000;
+      
+      String msg = "color:";
       char col;
       itoa(lastColor, &col, 10);
-      msg[7] = col;
-      send(&msg[0]);
+      msg += col;
+      
+      Serial.println(msg);
+      
+      char buffer[8];
+      msg.toCharArray(buffer, 8);
+      
+      send(&buffer[0]);
     }
   }
 
@@ -283,11 +302,18 @@ int checkColors()
 {
   
   // find the color we need
-  for( int i = 0; i < 6; i++) {
-    if( abs(colors[i][0] - colorData[RED] ) < 20 ) {
-      if( abs(colors[i][1] - colorData[GREEN] ) < 20 ) {
-        if( abs(colors[i][2] - colorData[BLUE] ) < 20 ) {
-          if( abs(colors[i][3] - colorData[CLEAR] ) < 20 ) {
+  for( int i = 0; i < 3; i++) {
+    
+    int r = colors[i][0] - colorData[RED];
+    int g = colors[i][1] - colorData[GREEN];
+    int b = colors[i][2] - colorData[BLUE];
+    int c = colors[i][3] - colorData[CLEAR];
+    
+    if( abs(r) < 100 ) {
+      if( abs(g) < 100 ) {
+        if( abs(b) < 100 ) {
+          if( abs(c) < 100 ) {
+            Serial.println(" RETURNING WITH AN ACTUAL VALUE !!!! ");
             return i;
           }
         }

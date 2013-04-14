@@ -191,7 +191,7 @@ void MarioKardApp::update()
     // values we'll be sending over to 
     float leftTread = 122, rightTread = 122;
     
-    console() << " quat " << quat.x << " " << quat.y << " " << quat.z << std::endl;
+    //console() << " quat " << quat.x << " " << quat.y << " " << quat.z << std::endl;
     //console() << cubeQuat.getRoll()<< " " << cubeQuat.getPitch() << std::endl;
 
     float roll = quat.z;
@@ -242,13 +242,41 @@ void MarioKardApp::update()
     }
     
     std::stringstream payload;
-    payload << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
+    
+    std::stringstream lstring, rstring;
+    int l = (int) math<float>::floor(leftTread);
+    
+    if( l < 10 ) {
+        lstring << "00" << l;
+    }
+    else if( l < 100) {
+        lstring << "0" << l;
+    }
+    else {
+        lstring << l;
+    }
+    
+    int r = (int) math<float>::floor(rightTread);
+    
+    if( r < 10 ) {
+        rstring << "00" << r;
+    }
+    else if( l < 100) {
+        rstring << "0" << r;
+    }
+    else {
+        rstring << r;
+    }
+    
+    payload << "speed:" << lstring.str()  << ":" << rstring.str() << std::endl;
+    
+    //payload << "speed:" << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
     
     //console() << " payload " << payload.str();
     
     if(con)
     {
-        console() << " sending " << payload.str() << std::endl;
+        //console() << " sending " << payload.str() << std::endl;
         con->send(payload.str());
     }
     
