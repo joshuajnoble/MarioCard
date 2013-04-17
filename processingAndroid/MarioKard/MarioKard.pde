@@ -45,15 +45,15 @@ SensorFuse sensorFuse;
 WebSocketClient client;
 
 List<BasicNameValuePair> extraHeaders = Arrays.asList(
-    new BasicNameValuePair("Cookie", "session=abcd")
+new BasicNameValuePair("Cookie", "session=abcd")
 );
 
 
-final String serverURI = "10.118.73.111:3000";
+final String serverURI = "ws://10.118.73.84:3000";
 
 void setup()
 {
-  
+
   sensor = new KetaiSensor(this);
   sensor.start();
   sensor.list();
@@ -62,37 +62,37 @@ void setup()
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(28);
-  
+
   sensorFuse = new SensorFuse();
-  client = new WebSocketClient(URI.create("wss://irccloud.com"), new WebSocketClient.Handler() {
+  client = new WebSocketClient(URI.create("ws://10.118.73.84:3000"), new WebSocketClient.Handler() {
     @Override
-    public void onConnect() {
-        //Log.d(TAG, "Connected!");
+      public void onConnect() {
+      println( "Connected" );
     }
 
     @Override
-    public void onMessage(String message) {
-        //Log.d(TAG, String.format("Got string message! %s", message));
+      public void onMessage(String message) {
+      println( "Connected" );
     }
 
     @Override
-    public void onMessage(byte[] data) {
-        //Log.d(TAG, String.format("Got binary message! %s", toHexString(data));
+      public void onMessage(byte[] data) {
+      println( " message " );
     }
 
     @Override
-    public void onDisconnect(int code, String reason) {
-        //Log.d(TAG, String.format("Disconnected! Code: %d Reason: %s", code, reason));
+      public void onDisconnect(int code, String reason) {
+      //Log.d(TAG, String.format("Disconnected! Code: %d Reason: %s", code, reason));
     }
 
     @Override
-    public void onError(Exception error) {
-        //Log.e(TAG, "Error!", error);
+      public void onError(Exception error) {
+      //Log.e(TAG, "Error!", error);
     }
-}, extraHeaders);
+  }
+  , extraHeaders);
 
-client.connect();
-  
+  client.connect();
 }
 
 void draw()
@@ -107,36 +107,68 @@ void draw()
     + "y: " + nfp(gyro.y, 1, 2) + "\n" 
     + "z: " + nfp(gyro.z, 1, 2) + "\n"
     , 20, 0, width, height);
-    
-    
-   if( millis() - lastMillis > 100) 
-   {
-     sensorFuse.runFusion();
-     lastMillis = millis();
-   }
-    
+
+  if ( millis() - lastMillis > 100 ) 
+  {
+    lastMillis = millis();
+
+    float roll = SensorManager.;
+
+    if ( roll > 0) { // turning left
+      if ( treadSpeed < 0) { // going backwards WORKS
+
+        leftTread = clamp(STOPPED + (STOPPED * normalizedTreadSpeed), FULL_SPEED_BWD, FULL_SPEED_FWD); // to 0
+        rightTread = STOPPED - ( fabs(STOPPED * normalizedTreadSpeed) - fabs(roll * STOPPED));
+      } 
+      else { // going fowards WORKS
+
+        rightTread = clamp(STOPPED + (STOPPED * normalizedTreadSpeed), STOPPED, FULL_SPEED_FWD); // to 255
+        leftTread = (STOPPED * normalizedTreadSpeed + STOPPED) - ( roll  * STOPPED);
+      }
+    } 
+    else {  // turning right
+      if ( treadSpeed < 0) { // going backwards
+
+        rightTread = clamp(STOPPED + (STOPPED * normalizedTreadSpeed), FULL_SPEED_BWD, FULL_SPEED_FWD); // to 0
+        leftTread = STOPPED - ( fabs(STOPPED * normalizedTreadSpeed) - fabs(roll * STOPPED));
+      } 
+      else { // going forwards
+
+        leftTread  = clamp(STOPPED + (STOPPED * normalizedTreadSpeed), STOPPED, FULL_SPEED_FWD); // to 255
+        rightTread = (STOPPED * normalizedTreadSpeed + STOPPED) + (roll * STOPPED);
+      }
+    }
+
+    String msg = "speed:" + 
+
+      client.send(
+  }
 }
 
 void onAccelerometerEvent(float x, float y, float z, long time, int accuracy)
 {
   accelerometer.set(x, y, z);
-  
+
   // add in gyro:
   float fusionTiming = millis() / 1000.0;
-  float[] xyz = {x, y, z};
+  float[] xyz = {
+    x, y, z
+  };
   sensorFuse.gyroFunction( xyz, fusionTiming);
-  calculateAccMagOrientation();  
+  calculateAccMagOrientation();
 }
 
 void onGyroscopeEvent(float x, float y, float z)
 {
   gyro.set(x, y, z);
-  
+
   // now do fusion
   float fusionTiming = millis() / 1000.0;
-  float[] xyz = {x, y, z};
+  float[] xyz = {
+    x, y, z
+  };
   sensorFuse.gyroFunction( xyz, fusionTiming);
-  calculateAccMagOrientation();  
+  calculateAccMagOrientation();
 }
 
 public void mousePressed() { 

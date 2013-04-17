@@ -2,6 +2,7 @@
 #include "cinder/app/Renderer.h"
 #include "cinder/Surface.h"
 #include "cinder/gl/Texture.h"
+#include "cinder/gl/TextureFont.h"
 #include "cinder/ImageIo.h"
 #include "cinder/Camera.h"
 
@@ -38,6 +39,14 @@ using namespace websocketpp;
 using namespace ci;
 using namespace ci::app;
 
+///////////////////////////////////////////////
+// static var for errors
+///////////////////////////////////////////////
+
+int errorState;
+
+
+
 ////////////////////////////////////////////////
 // simple handler to handle landing
 ////////////////////////////////////////////////
@@ -45,12 +54,14 @@ using namespace ci::app;
 class echo_client_handler : public client::handler {
 public:
     
-    virtual void on_open(connection_ptr con) {
+    void on_open(connection_ptr con) {
         console() << "connection open " << std::endl;
+        errorState = 0;
     }
     
-    virtual void on_close(connection_ptr con) {
+   void on_close(connection_ptr con) {
         console() << "connection closed " << std::endl;
+        errorState = 2;
     }
     
     void on_message(connection_ptr con, message_ptr msg) {
@@ -59,6 +70,7 @@ public:
     
     void on_fail(connection_ptr con) {
         console() << "connection failed" << std::endl;
+        errorState = 1;
     }
     
     int m_case_count;
@@ -112,6 +124,9 @@ class MarioKardApp : public AppCocoaTouch {
     
     bool touchMoved;
     float timeTouchHeld;
+    Font mFont;
+    gl::TextureFontRef mTextureFont;
+    std::string speeds;
     
 };
 
@@ -121,6 +136,11 @@ MarioKardApp::MarioKardApp():rollRatio(0.8105694691387) {
 
 void MarioKardApp::setup()
 {
+    
+    errorState = 0;
+    
+    mFont = Font( "Helvetica", 36 );
+    mTextureFont = gl::TextureFont::create( mFont );
     
     timeTouchHeld = 0;
     
@@ -152,11 +172,11 @@ void MarioKardApp::setup()
         
         thread = std::shared_ptr<boost::thread>( new boost::thread(boost::bind(&client::run, endpoint, false)));
         
-        //endpoint->run();
         console() << "done" << std::endl;
         
     } catch (std::exception& e) {
         console() << "Exception: " << e.what() << std::endl;
+        errorState = 1;
     }
     
     //////////////////////////////////////////////////////
@@ -181,19 +201,12 @@ void MarioKardApp::update()
     
     // The translation and rotation components of the modelview matrix
     CMQuaternion quat;
-	
     CMDeviceMotion *deviceMotion = motionManager.deviceMotion;
-    CMAttitude *attitude = deviceMotion.attitude;
-    
+    CMAttitude *attitude = deviceMotion.attitude;    
     quat = attitude.quaternion;
-    //Quatf cubeQuat = Quatf( quat.w, quat.x, -quat.y, quat.z );
-    
+
     // values we'll be sending over to 
     float leftTread = 122, rightTread = 122;
-    
-    //console() << " quat " << quat.x << " " << quat.y << " " << quat.z << std::endl;
-    //console() << cubeQuat.getRoll()<< " " << cubeQuat.getPitch() << std::endl;
-
     float roll = quat.z;
     
     if(maxRoll < roll) {
@@ -203,9 +216,7 @@ void MarioKardApp::update()
     if(minRoll > roll) {
         minRoll = roll;
     }
-    
-    //console() << maxRoll << " " << minRoll << std::endl;
-    
+
     float normalizedTreadSpeed = treadSpeed * 2;
 
     
@@ -271,14 +282,20 @@ void MarioKardApp::update()
     payload << "speed:" << lstring.str()  << ":" << rstring.str() << std::endl;
     
     //payload << "speed:" << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
-    
     //console() << " payload " << payload.str();
     
-    if(con)
+    speeds = payload.str();
+    
+    if(con->get_state() == session::state::OPEN)
     {
         //console() << " sending " << payload.str() << std::endl;
         con->send(payload.str());
+    } else if(con->get_state() != session::state::OPEN && getElapsedSeconds() > 3.f) {
+        errorState = 1;
+        return;
     }
+
+    
     
 }
 
@@ -286,14 +303,48 @@ void MarioKardApp::draw()
 {
     gl::clear();
     
-    gl::rotate(90);
-    gl::translate(0, -640);
-    gl::draw( bg );
-    gl::translate(0, 640);
-    gl::rotate(-90);
+    gl::pushMatrices();
+    
+    if(getElapsedSeconds() < 20.f)
+    {
+        gl::rotate(90);
+        gl::translate(0, -640);
+        gl::draw( bg );
+        gl::translate(0, 640);
+        gl::rotate(-90);
+    }
     
     Rectf rect(getWindowWidth() * (treadSpeed + 0.5) - 20, -100, getWindowWidth() * (treadSpeed + 0.5) + 20, getWindowHeight() + 100);
     gl::drawSolidRect(rect);
+    
+    gl::color(Color(1, 1, 1));
+    
+    if( errorState == 0 ) {
+        gl::rotate(90);
+        gl::translate(0, -640);
+        mTextureFont->drawString( speeds, Vec2f( 10, 50 ) );
+        gl::translate(0, 640);
+        gl::rotate(-90);
+    }
+    
+    if( errorState == 1 ) {
+        gl::rotate(90);
+        gl::translate(0, -640);
+        mTextureFont->drawString( " Can't connect to server ", Vec2f( 10, 50 ) );
+        gl::translate(0, 640);
+        gl::rotate(-90);
+    }
+    
+    if( errorState == 2 ) {
+        gl::rotate(90);
+        gl::translate(0, -640);
+        mTextureFont->drawString( " Server closed connection ", Vec2f( 10, 50 ) );
+        gl::translate(0, 640);
+        gl::rotate(-90);
+    }
+    
+    gl::popMatrices();
+    
 }
 
 void MarioKardApp::shutdown()
