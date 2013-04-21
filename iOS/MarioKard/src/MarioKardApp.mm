@@ -132,11 +132,14 @@ class MarioKardApp : public AppCocoaTouch {
 
 MarioKardApp::MarioKardApp():rollRatio(0.8105694691387) {
     uri = "ws://10.118.73.84:3000";
+    //uri = "ws://192.168.1.126:3000";
 }
 
 void MarioKardApp::setup()
 {
     
+    cachedLeftTread = -1;
+    cachedRightTread = -1;
     errorState = 0;
     
     mFont = Font( "Helvetica", 36 );
@@ -252,49 +255,59 @@ void MarioKardApp::update()
         }
     }
     
-    std::stringstream payload;
+    int ldiff = abs(cachedLeftTread - leftTread);
+    int rdiff = abs(cachedRightTread - rightTread);
     
-    std::stringstream lstring, rstring;
-    int l = (int) math<float>::floor(leftTread);
-    
-    if( l < 10 ) {
-        lstring << "00" << l;
-    }
-    else if( l < 100) {
-        lstring << "0" << l;
-    }
-    else {
-        lstring << l;
-    }
-    
-    int r = (int) math<float>::floor(rightTread);
-    
-    if( r < 10 ) {
-        rstring << "00" << r;
-    }
-    else if( l < 100) {
-        rstring << "0" << r;
-    }
-    else {
-        rstring << r;
-    }
-    
-    payload << "speed:" << lstring.str()  << ":" << rstring.str() << std::endl;
-    
-    //payload << "speed:" << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
-    //console() << " payload " << payload.str();
-    
-    speeds = payload.str();
-    
-    if(con->get_state() == session::state::OPEN)
+    if(ldiff > 1 || rdiff > 1)
     {
-        //console() << " sending " << payload.str() << std::endl;
-        con->send(payload.str());
-    } else if(con->get_state() != session::state::OPEN && getElapsedSeconds() > 3.f) {
-        errorState = 1;
-        return;
-    }
+        
+        cachedLeftTread = leftTread;
+        cachedRightTread = rightTread;
+        
+        std::stringstream payload;
+        
+        std::stringstream lstring, rstring;
+        int l = (int) math<float>::floor(leftTread);
+        
+        if( l < 10 ) {
+            lstring << "00" << l;
+        }
+        else if( l < 100) {
+            lstring << "0" << l;
+        }
+        else {
+            lstring << l;
+        }
+        
+        int r = (int) math<float>::floor(rightTread);
+        
+        if( r < 10 ) {
+            rstring << "00" << r;
+        }
+        else if( l < 100) {
+            rstring << "0" << r;
+        }
+        else {
+            rstring << r;
+        }
+        
+        payload << "speed:" << lstring.str()  << ":" << rstring.str() << std::endl;
+        
+        //payload << "speed:" << (int) math<float>::floor(leftTread) << ":" << (int) math<float>::floor(rightTread) << std::endl;
+        //console() << " payload " << payload.str();
+        
+        speeds = payload.str();
+        
+        if(con->get_state() == session::state::OPEN)
+        {
+            //console() << " sending " << payload.str() << std::endl;
+            con->send(payload.str());
+        } else if(con->get_state() != session::state::OPEN && getElapsedSeconds() > 3.f) {
+            errorState = 1;
+            return;
+        }
 
+    }
     
     
 }

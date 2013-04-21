@@ -6,8 +6,8 @@
 #define PWMB 15
 #define AIN1 1
 #define AIN2 0
-#define BIN1 4
-#define BIN2 3
+#define BIN1 3
+#define BIN2 4
 #define STBY 2
 #define MOTOR_A 0
 #define MOTOR_B 1
@@ -15,7 +15,6 @@
 #define REVERSE 0
 #define RIGHT 1
 #define LEFT 0
-
 
 //////////////////////////////////////////////////////////////////
 // Color Sensor
@@ -57,6 +56,8 @@
 #define OFFSET_BLUE 0x4A
 #define OFFSET_CLEAR 0x4B
 
+int millisSinceSwitch = 0;
+
 
 #include <AltSoftSerial.h> // need this to talk to the wifly shield.
 #include <WiFlyHQ.h> // wifly!
@@ -88,14 +89,24 @@ bool hasGottenIDFromServer = false;
 // want to swap it over, but we'll have to see
 AltSoftSerial wifiSerial(10,11);
 
+
+
+//const char mySSID[] = "hoembaes";
+//const char myPassword[] = "tigerstyle";
+//const char IP[] = "192.168.1.126";
+
 // Change these to match your WiFi network
-const char mySSID[] = "frogwirelessext";
-const char myPassword[] = "friedolin";
+const char mySSID[] = "xx";
+const char myPassword[] = "xx";
+const char IP[] = "10.118.73.84";
+ 
 
 const int PORT = 3000;
-const char IP[] = "10.118.73.84";
+
 long lastCheck;
 int lastColor;
+
+int driveState = 0;
 
 WiFly wifly;
 
@@ -106,13 +117,13 @@ WiFly wifly;
 const int blue[] = { 515, 555, 732, 445 };
 //const int red[] = { 1023, 662, 580, 690 }; // sparkfun box
 //const int yellow[] = { 1023, 860, 524, 617 };
-//const int orange[] = { 921, 604, 350, 450 }; // post-it note orange
+const int orange[] = { 921, 604, 350, 450 }; // post-it note orange
 const int green[] = { 453, 495, 306, 309 }; // business card green
 const int magenta[] = { 1023, 662, 579, 689 };
 //const int greenLined[] = { 741, 683, 392, 487 };
-const int white[] = { 1000, 1000, 1000, 1000 };
+//const int white[] = { 1000, 1000, 1000, 1000 };
 
-const int *colors[] = { blue, green, magenta, white };
+const int *colors[] = { blue, orange, green, magenta };
 
 
 //////////////////////////////////////////////////////////////////
@@ -134,7 +145,6 @@ void setup()
   Serial.begin(57600);
   
   // set up the motor driver
-
   pinMode(PWMA,OUTPUT);
   pinMode(AIN1,OUTPUT);
   pinMode(AIN2,OUTPUT);
@@ -142,6 +152,7 @@ void setup()
   pinMode(BIN1,OUTPUT);
   pinMode(BIN2,OUTPUT);
   pinMode(STBY,OUTPUT);
+  motor_standby(false);        //Must set STBY pin to HIGH in order to move
   
   pinMode(ledPin, OUTPUT);
 
@@ -174,7 +185,7 @@ void setup()
     if (!connect(IP, "", 3000)) {
       Serial.print(F("Failed to connect to "));
       Serial.println(IP);
-      wifly.terminal();
+      //wifly.terminal();
     }
 
     //Serial.println(F("Sending Hello World"));
@@ -199,8 +210,6 @@ void setup()
   calibrateCapacitors();  // This calibrates the RGB, and C cap registers
   getRGBC();  // After calibrating, we can get the first RGB and C data readings
 
-  
-  motor_standby(false);        //Must set STBY pin to HIGH in order to move
   digitalWrite(ledPin, HIGH);
 
 }
@@ -208,11 +217,8 @@ void setup()
 
 void loop()
 {
-  digitalWrite(ledPin, HIGH);
   if (getMessage(inBuf, sizeof(inBuf)) > 0) {
       
-    Serial.println(inBuf);
-    
     char t[3];
     memset(t, 0x20, 3);
     
@@ -248,39 +254,41 @@ void loop()
     
     right = (int) strtol(&t[0], NULL, 0);
     
-    Serial.println(left);
+    Serial.print(left);
+    Serial.print(" ");
     Serial.println(right);
-  }
+    //void motor_control(char motor, char direction, unsigned char speed)
+    if(left > 127) {
+      motor_control( MOTOR_A, FORWARD, (left - 127));
+    } else {
+      motor_control( MOTOR_A, REVERSE, (127 - left));
+    }
     
-  //void motor_control(char motor, char direction, unsigned char speed)
-  if(left > 127) {
-    motor_control( MOTOR_A, FORWARD, left - 127);
-  } else {
-    motor_control( MOTOR_A, REVERSE, 127 - left);
-  }
-  
-  if(right > 127) {
-    motor_control( MOTOR_B, FORWARD, right - 127);
-  } else {
-    motor_control( MOTOR_B, REVERSE, 127 - right);
+    if(right > 127) {
+      motor_control( MOTOR_B, FORWARD, (right - 127));
+    } else {
+      motor_control( MOTOR_B, REVERSE, (127 - right));
+    }
   }
 
-  if(lastCheck < millis() && lastCheck - millis() > 200) {
+  if(lastCheck < millis() && millis() - lastCheck > 100) {
+    
+    Serial.print( colorData[RED]);
+    Serial.print( " " );
+        Serial.print( colorData[BLUE]);
+    Serial.print( " " );
+        Serial.print( colorData[GREEN]);
+    Serial.print( " " );
+        Serial.print( colorData[CLEAR]);
+    Serial.println( " " );
+    
     lastCheck = millis();
     getRGBC();
-    
-    /*Serial.print( colorData[RED] );
-    Serial.print( " " );
-    Serial.print( colorData[GREEN] );
-    Serial.print( " " );
-    Serial.print( colorData[BLUE] );
-    Serial.print( " " );
-    Serial.println( colorData[CLEAR] );*/
     
     lastColor = checkColors();
     if(lastColor != -1 ) {
       
-      lastCheck += 2000;
+      lastCheck += 1000;
       
       String msg = "color:";
       char col;
@@ -300,9 +308,24 @@ void loop()
 
 int checkColors()
 {
+  //const int *colors[] = { blue, orange, green, magenta };
+  // it's red or orange
+  if( colorData[RED] > 1000 && colorData[CLEAR] > 800) {
+    
+    if(colorData[BLUE] > 800) {
+      return 3; // magenta
+    } else {
+      return 1; // orange
+    }
+    
+  } else if( colorData[GREEN] > 900 && colorData[RED] < 700 && colorData[CLEAR] > 600 ) {
+      return 2; // green
+  } else if ( colorData[BLUE] > 900 && colorData[CLEAR] > 600) {
+    return 0;
+  }
   
   // find the color we need
-  for( int i = 0; i < 3; i++) {
+  /*for( int i = 0; i < 3; i++) {
     
     int r = colors[i][0] - colorData[RED];
     int g = colors[i][1] - colorData[GREEN];
@@ -319,7 +342,7 @@ int checkColors()
         }
       }
     }
-  }
+  }*/
   
   return -1;
 }
@@ -388,7 +411,7 @@ void motor_standby(char standby)
   else digitalWrite(STBY,HIGH);
 }
 
-void motor_control(char motor, char direction, unsigned char speed)
+void motor_control(char motor, char direction, int speed)
 { 
   if (motor == MOTOR_A)
   {
