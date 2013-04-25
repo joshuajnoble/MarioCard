@@ -56,6 +56,8 @@
 #define OFFSET_BLUE 0x4A
 #define OFFSET_CLEAR 0x4B
 
+const int DEBUG = 1;
+
 int millisSinceSwitch = 0;
 
 
@@ -269,6 +271,10 @@ void loop()
     } else {
       motor_control( MOTOR_B, REVERSE, (127 - right));
     }
+  }
+
+  if(DEBUG == 1) {
+    return;
   }
 
   if(lastCheck < millis() && millis() - lastCheck > 100) {

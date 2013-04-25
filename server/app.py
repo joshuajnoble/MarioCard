@@ -2,11 +2,13 @@ import struct
 import SocketServer
 import time
 import threading
+from threading import Timer
 from SocketServer import ThreadingTCPServer, BaseRequestHandler
 from base64 import b64encode
 from hashlib import sha1
 from mimetools import Message
 from StringIO import StringIO
+import timeit
 
 LEFT = 0
 RIGHT = 1
@@ -121,15 +123,15 @@ class WebSocketsHandler(SocketServer.StreamRequestHandler):
                 self.receivedMessage = self.receivedMessage[self.receivedMessage.index("right"):len(self.receivedMessage)]
                 self.server.routeControlSignal(self, self.receivedMessage, RIGHT)
                 self.receivedMessage = ""
-
+	
 
 	    if self.receivedMessage.find("speed") != -1 and len(self.receivedMessage) > 12:
 		speedStart = self.receivedMessage.index("speed:")
 		lspeed = self.receivedMessage[speedStart+6:speedStart+9]
-		print " left speed " + str(lspeed)
 		self.server.routeControlSignal(self, lspeed, LEFT)
 		rspeed = self.receivedMessage[speedStart+10:speedStart+14]
-		print " right speed " + str(rspeed)
+		print " speed " + str(lspeed) + " " + str(rspeed)
+		#print " right speed " + str(rspeed)
 		self.server.routeControlSignal(self, rspeed, RIGHT)
                 self.receivedMessage = ""
 
@@ -178,29 +180,21 @@ class WSServer(ThreadingTCPServer):
             self.jointBrowserWifly.append(joint)
 
     def removePair(self, handler):
-        for joint in self.jointBrowserWifly:
-            if(joint['browser'] == handler or joint['wifly'] == handler):
-                jointBrowserWifly.remove(joint)
-                return
+        try:
+            for joint in self.jointBrowserWifly:
+                if(joint['browser'] == handler or joint['wifly'] == handler):
+                    jointBrowserWifly.remove(joint)
+                    return
+        except NameError:
+            print "no jointBrowserWifly"
 
 
     def routeControlSignal(self, handler, message, side):
-        print "control signal"
-        print message
+        
+
         for joint in self.jointBrowserWifly:
             if(joint['browser'] == handler):
-                print "found handler " + str(handler.client_address)
-
-                '''if message.partition(':')[2].isalnum():
-                    joint['cachedSpeed'][side] = int(message.partition(':')[2])
-                else:
-                    tmp = message.partition(':')[2]
-                    joint['cachedSpeed'][side] = int(tmp.partition(':')[2])'''
-		
-		joint['cachedSpeed'][side] = int(message)
-
-
-                print "cachedSpeed " + str(joint['cachedSpeed'][side])
+                joint['cachedSpeed'][side] = int(message)
                 joint['wifly'].send_message(self.stringify(joint['cachedSpeed'][LEFT], joint['cachedSpeed'][RIGHT]))
                 return
 
@@ -208,9 +202,12 @@ class WSServer(ThreadingTCPServer):
 	print "GET COLOR " + str(message)	
         for joint in self.jointBrowserWifly:
             if(joint['wifly'] == handler):
-                currentGameEvent = int(message)
-                currentGameEventOwner = handler.client_address
-                t = Timer(2.0, clearGameState)
+		try:
+                	currentGameEvent = int(message)
+			currentGameEventOwner = handler.client_address
+	                t = Timer(2.0, clearGameState)
+		except ValueError:
+			print "Value error parsing color"		
                 return
 
     def gameUpdate(self):
