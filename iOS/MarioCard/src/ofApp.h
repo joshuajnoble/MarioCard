@@ -6,6 +6,12 @@
 #include "ofxLibwebsockets.h"
 #include "Posts.h"
 
+class arcPoint {
+public:
+    float position;
+    ofColor fill;
+};
+
 class ofApp : public ofxiOSApp {
 	
     public:
@@ -31,7 +37,12 @@ class ofApp : public ofxiOSApp {
     bool connected;
     float speed;
     bool updateFlag;
-    vector<Posts> posts;
+    
+    ofPolyline arc;
+    deque<arcPoint> arcPoints;
+    
+    ofMesh mesh;
+    
     
     // websocket methods
     void onConnect( ofxLibwebsockets::Event& args );

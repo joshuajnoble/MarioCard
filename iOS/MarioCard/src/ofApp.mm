@@ -4,9 +4,10 @@ const int frequency = 10;
 
 
 //--------------------------------------------------------------
-void ofApp::setup(){	
+void ofApp::setup(){
     connected = false;
     
+    // make a web socket connection that we can stream data to
     client.connect("echo.websocket.org"); // would be great to do this with mDNS
     client.addListener(this);
     
@@ -27,10 +28,34 @@ void ofApp::setup(){
             break;
     }
     
+    int count = 0;
+    for( float i = 0; i < 1.0; i+=0.05 )
+    {
+        arcPoint p;
+        p.position = i;
+        
+        if(count % 2)
+        {
+            p.fill.set(122, 122, 122);
+        }
+        else
+        {
+            p.fill.set(255, 255, 255);
+        }
+        
+        arcPoints.push_back(p);
+        count++;
+    }
+    
+    left = 0;
+    right = 0;
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    
+    // send a message over our socket about our speed & position
     if(ofGetElapsedTimeMillis() % 100 == 0) // 10hz refresh?
     {
         stringstream message;
@@ -39,52 +64,113 @@ void ofApp::update(){
         updateFlag = false;
     }
     
+    // figure out speed and direction from L/R tread
     speed = ofMap( left + right, -254, 254, 0.03, -0.03);
-    cout << speed << endl;
+    float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
     
-    for ( int i = 0; i < posts.size(); i++ )
+    // make a brand new arc using our steer
+    arc.clear();
+    arc.addVertex(steer, 50);
+    arc.bezierTo( ofGetWidth()/2 + ((ofGetWidth()/2 - steer) / 4), ofGetHeight()*0.5, ofGetWidth()/2, ofGetHeight()*0.75, ofGetWidth()/2, ofGetHeight(), 100);
+    arc.addVertex(ofGetWidth()/2, ofGetHeight());
+    
+    // accelerate the arc points nicely for point-along-arc calculations
+    for( int i = 0; i < arcPoints.size(); i++ )
     {
-        posts.at(i).update(4, speed);
-        if (posts.at(i).remove == true)
+        arcPoints.at(i).position += speed;
+        arcPoints.at(i).position = roundf(arcPoints.at(i).position * 60) / 60.0;
+    }
+    
+    // if the point is off either end of the arc, delete it and add a new one at the beginning or end
+    // of the arc so we're continuous
+    for( int i = 0; i < arcPoints.size(); i++ )
+    {
+        
+        if(arcPoints.at(i).position < 0.0)
         {
-            posts.erase(posts.begin() + i);
+            
+            cout << (arcPoints.begin() + i)->fill << endl;
+            arcPoints.erase(arcPoints.begin() + i);
+            arcPoint p;
+            p.position = 1.0;
+            if(arcPoints.at(arcPoints.size()-1).fill.r == 122)
+            {
+                p.fill.set(255, 255, 255);
+            }
+            else
+            {
+                p.fill.set(122, 122, 122);
+            }
+            arcPoints.push_back(p);
+        }
+        
+        if(arcPoints.at(i).position > 1.0)
+        {
+            cout << (arcPoints.begin() + i)->fill << endl;
+            arcPoints.erase(arcPoints.begin() + i);
+            arcPoint p;
+            p.position = 0.0;
+            if(arcPoints.at(0).fill.r == 122)
+            {
+                p.fill.set(255, 255, 255, 255);
+            }
+            else
+            {
+                p.fill.set(122, 122, 122, 255);
+            }
+            arcPoints.push_front(p);
         }
     }
-    
-    if(ofGetFrameNum() % frequency == 0)
-    {
-        addPost();
-    }
-    
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	
     
+    // clear
     ofBackground(0, 0, 0);
     
+    ofEnableAlphaBlending();
     ofSetColor(0, 255, 0);
     
     int w = ofGetWidth();
     int h = ofGetHeight();
     
-    ofDrawRectangle(0, h/2, w/2, ofMap(left, -127, 127, -h/2, h/2));
-    ofDrawRectangle(w/2, h/2, w/2, ofMap(right, -127, 127, -h/2, h/2));
+    // draw our controls
+    ofDrawRectangle(0, h/2, 50, ofMap(left, -127, 127, -h/2, h/2));
+    ofDrawRectangle(w - 50, h/2, 50, ofMap(right, -127, 127, -h/2, h/2));
     
-    ofSetColor(255, 255, 255);
+    ofPushMatrix();
+    ofTranslate(0, 20);
+    ofRotateX(50);
     
-    for ( int i = 0; i < posts.size(); i++ )
+    ofSetLineWidth(10);
+    
+    int scale = 60;
+    
+    // use our arc segments to draw boxes that are our 'road'
+    for( int i = 1; i < arcPoints.size(); i++ )
     {
-        posts.at(i).draw();
+        
+        float position = arcPoints.at(i).position;
+        float prevPosition = roundf(arcPoints.at(i-1).position * 60) / 60.0;
+        
+        ofSetColor(arcPoints.at(i).fill);
+        ofBeginShape();
+        
+        ofVertex(arc.getPointAtPercent(prevPosition).x - scale, arc.getPointAtPercent(prevPosition).y);
+        ofVertex(arc.getPointAtPercent(prevPosition).x + scale, arc.getPointAtPercent(prevPosition).y);
+        ofVertex(arc.getPointAtPercent(position).x + scale, arc.getPointAtPercent(position).y);
+        ofVertex(arc.getPointAtPercent(position).x - scale, arc.getPointAtPercent(position).y);
+        ofEndShape();
+        
     }
-
+    
     
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(){
-
+    
 }
 
 //--------------------------------------------------------------
@@ -121,12 +207,12 @@ void ofApp::touchMoved(ofTouchEventArgs & touch){
 
 //--------------------------------------------------------------
 void ofApp::touchUp(ofTouchEventArgs & touch){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::touchDoubleTap(ofTouchEventArgs & touch){
-
+    
 }
 
 //--------------------------------------------------------------
@@ -136,37 +222,37 @@ void ofApp::touchCancelled(ofTouchEventArgs & touch){
 
 //--------------------------------------------------------------
 void ofApp::lostFocus(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::gotFocus(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::gotMemoryWarning(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::deviceOrientationChanged(int newOrientation){
-
+    
 }
 
 void ofApp::addPost()
 {
     float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
-    if(speed < 0)
-    {
-        Posts p(steer, ofGetHeight() - 20, ofGetWidth(), 0, 0.0);
-        posts.push_back(p);
-    }
-    else
-    {
-        Posts p(steer, 20, ofGetWidth(), ofGetHeight(), 0.0);
-        posts.push_back(p);
-    }
+    //    if(speed < 0)
+    //    {
+    //        Posts p(steer, ofGetHeight() - 20, ofGetWidth(), 0, 0.0);
+    //        posts.push_back(p);
+    //    }
+    //    else
+    //    {
+    //        Posts p(steer, 20, ofGetWidth(), ofGetHeight(), 0.0);
+    //        posts.push_back(p);
+    //    }
 }
 
 // websockets methods
@@ -187,12 +273,12 @@ void ofApp::onClose( ofxLibwebsockets::Event& args ){
 
 //--------------------------------------------------------------
 void ofApp::onIdle( ofxLibwebsockets::Event& args ){
-//    cout<<"on idle"<<endl;
+    //    cout<<"on idle"<<endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::onMessage( ofxLibwebsockets::Event& args ){
-//    cout<<"got message "<<args.message<<endl;
+    //    cout<<"got message "<<args.message<<endl;
 }
 
 //--------------------------------------------------------------

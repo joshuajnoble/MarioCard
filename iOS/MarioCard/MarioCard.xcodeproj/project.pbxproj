@@ -177,8 +177,8 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				A841CA851D47DF9E00222734 /* libwebsockets.a */,
 				678E130917951536005B6D19 /* Icon.png */,
+				A841CA851D47DF9E00222734 /* libwebsockets.a */,
 				678E130717951530005B6D19 /* Icon@2x.png */,
 				678E130B1795153C005B6D19 /* Default.png */,
 				678E130D17951540005B6D19 /* Default@2x.png */,
