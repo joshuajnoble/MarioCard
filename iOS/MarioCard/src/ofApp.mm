@@ -59,7 +59,8 @@ void ofApp::update(){
     if(ofGetElapsedTimeMillis() % 100 == 0) // 10hz refresh?
     {
         stringstream message;
-        message << left << ":" << right;
+        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+        message << (left + 255 / 4) << ":" << (right + 255 / 4);
         client.send(message.str());
         updateFlag = false;
     }

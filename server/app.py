@@ -113,25 +113,23 @@ class WebSocketsHandler(SocketServer.StreamRequestHandler):
         # only browsers send a security key
         if(self.hasSecKey):
             #make sure we have at least a whole message
-            if self.receivedMessage.find("left") != -1 and len(self.receivedMessage) > 6:
-                self.receivedMessage = self.receivedMessage[self.receivedMessage.index("left"):len(self.receivedMessage)]
-                self.server.routeControlSignal(self, self.receivedMessage, LEFT)
-                self.receivedMessage = ""
+            #if self.receivedMessage.find("left") != -1 and len(self.receivedMessage) > 6:
+            #    self.receivedMessage = self.receivedMessage[self.receivedMessage.index("left"):len(self.receivedMessage)]
+            #    self.server.routeControlSignal(self, self.receivedMessage, LEFT)
+            #    self.receivedMessage = ""
 
             #make sure we have at least a whole message
-            if self.receivedMessage.find("right") != -1 and len(self.receivedMessage) > 7:
-                self.receivedMessage = self.receivedMessage[self.receivedMessage.index("right"):len(self.receivedMessage)]
-                self.server.routeControlSignal(self, self.receivedMessage, RIGHT)
-                self.receivedMessage = ""
+            #if self.receivedMessage.find("right") != -1 and len(self.receivedMessage) > 7:
+            #    self.receivedMessage = self.receivedMessage[self.receivedMessage.index("right"):len(self.receivedMessage)]
+            #    self.server.routeControlSignal(self, self.receivedMessage, RIGHT)
+            #    self.receivedMessage = ""
 	
 
-	    if self.receivedMessage.find("speed") != -1 and len(self.receivedMessage) > 12:
-		speedStart = self.receivedMessage.index("speed:")
-		lspeed = self.receivedMessage[speedStart+6:speedStart+9]
+	    if  len(self.receivedMessage) > 6:
+		lspeed = self.receivedMessage[0:3] # don't mess with negative numbers
 		self.server.routeControlSignal(self, lspeed, LEFT)
-		rspeed = self.receivedMessage[speedStart+10:speedStart+14]
+		rspeed = self.receivedMessage[4:7] # don't mess with negative numbers
 		print " speed " + str(lspeed) + " " + str(rspeed)
-		#print " right speed " + str(rspeed)
 		self.server.routeControlSignal(self, rspeed, RIGHT)
                 self.receivedMessage = ""
 
