@@ -91,12 +91,6 @@ bool hasGottenIDFromServer = false;
 // want to swap it over, but we'll have to see
 AltSoftSerial wifiSerial(10,11);
 
-
-
-//const char mySSID[] = "hoembaes";
-//const char myPassword[] = "tigerstyle";
-//const char IP[] = "192.168.1.126";
-
 // Change these to match your WiFi network
 const char mySSID[] = "xx";
 const char myPassword[] = "xx";
