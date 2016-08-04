@@ -2,9 +2,7 @@
 
 #include "ofxiOS.h"
 #include "ofxiOSExtras.h"
-
-#include "ofxLibwebsockets.h"
-#include "Posts.h"
+#include "ofxNetwork.h"
 
 class arcPoint {
 public:
@@ -30,11 +28,12 @@ class ofApp : public ofxiOSApp {
         void gotFocus();
         void gotMemoryWarning();
         void deviceOrientationChanged(int newOrientation);
-    void addPost();
     
     int left, right;
-    ofxLibwebsockets::Client client;
+    ofxUDPManager client;
+    
     bool connected;
+    
     float speed;
     bool updateFlag;
     
@@ -42,15 +41,6 @@ class ofApp : public ofxiOSApp {
     deque<arcPoint> arcPoints;
     
     ofMesh mesh;
-    
-    
-    // websocket methods
-    void onConnect( ofxLibwebsockets::Event& args );
-    void onOpen( ofxLibwebsockets::Event& args );
-    void onClose( ofxLibwebsockets::Event& args );
-    void onIdle( ofxLibwebsockets::Event& args );
-    void onMessage( ofxLibwebsockets::Event& args );
-    void onBroadcast( ofxLibwebsockets::Event& args );
 
 };
 

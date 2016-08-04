@@ -26,6 +26,11 @@
 		67DFA53619F92A69003B3434 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67DFA53419F92A5E003B3434 /* Accelerate.framework */; };
 		A822ECB81D46E6D9000757E0 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A822ECB71D46E6D9000757E0 /* jsoncpp.cpp */; };
 		A841CA861D47DF9E00222734 /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A841CA851D47DF9E00222734 /* libwebsockets.a */; };
+		A851F0481D52BD23001A768E /* Instructions.txt in Resources */ = {isa = PBXBuildFile; fileRef = A851F03C1D52BD23001A768E /* Instructions.txt */; };
+		A851F0491D52BD23001A768E /* ofxTCPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A851F0401D52BD23001A768E /* ofxTCPClient.cpp */; };
+		A851F04A1D52BD23001A768E /* ofxTCPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A851F0421D52BD23001A768E /* ofxTCPManager.cpp */; };
+		A851F04B1D52BD23001A768E /* ofxTCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A851F0441D52BD23001A768E /* ofxTCPServer.cpp */; };
+		A851F04C1D52BD23001A768E /* ofxUDPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A851F0461D52BD23001A768E /* ofxUDPManager.cpp */; };
 		A8AE3CFAAA48426DE87E2D91 /* Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA9437D1E8FF224D87BB04CB /* Server.cpp */; };
 		BB16EBD20F2B2A9500518274 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD10F2B2A9500518274 /* OpenGLES.framework */; };
 		BB16EBD90F2B2AB500518274 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD80F2B2AB500518274 /* QuartzCore.framework */; };
@@ -84,6 +89,17 @@
 		A822ECB61D46E6D9000757E0 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
 		A822ECB71D46E6D9000757E0 /* jsoncpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = jsoncpp.cpp; sourceTree = "<group>"; };
 		A841CA851D47DF9E00222734 /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxLibwebsockets/libs/libwebsockets/lib/iosarmv7/libwebsockets.a; sourceTree = "<group>"; };
+		A851F03C1D52BD23001A768E /* Instructions.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Instructions.txt; sourceTree = "<group>"; };
+		A851F03E1D52BD23001A768E /* ofxNetwork.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxNetwork.h; sourceTree = "<group>"; };
+		A851F03F1D52BD23001A768E /* ofxNetworkUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxNetworkUtils.h; sourceTree = "<group>"; };
+		A851F0401D52BD23001A768E /* ofxTCPClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxTCPClient.cpp; sourceTree = "<group>"; };
+		A851F0411D52BD23001A768E /* ofxTCPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxTCPClient.h; sourceTree = "<group>"; };
+		A851F0421D52BD23001A768E /* ofxTCPManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxTCPManager.cpp; sourceTree = "<group>"; };
+		A851F0431D52BD23001A768E /* ofxTCPManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxTCPManager.h; sourceTree = "<group>"; };
+		A851F0441D52BD23001A768E /* ofxTCPServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxTCPServer.cpp; sourceTree = "<group>"; };
+		A851F0451D52BD23001A768E /* ofxTCPServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxTCPServer.h; sourceTree = "<group>"; };
+		A851F0461D52BD23001A768E /* ofxUDPManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxUDPManager.cpp; sourceTree = "<group>"; };
+		A851F0471D52BD23001A768E /* ofxUDPManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxUDPManager.h; sourceTree = "<group>"; };
 		A8D8DF101D48261B000EBD28 /* Posts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Posts.h; sourceTree = "<group>"; };
 		BAEFE4DC166C3B41EDA9D905 /* Client.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = Client.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxLibwebsockets/libs/ofxLibwebsockets/include/ofxLibwebsockets/Client.h; sourceTree = SOURCE_ROOT; };
 		BB16EBD10F2B2A9500518274 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -271,6 +287,40 @@
 			path = json;
 			sourceTree = "<group>";
 		};
+		A851F03A1D52BD23001A768E /* ofxNetwork */ = {
+			isa = PBXGroup;
+			children = (
+				A851F03B1D52BD23001A768E /* docs */,
+				A851F03D1D52BD23001A768E /* src */,
+			);
+			path = ofxNetwork;
+			sourceTree = "<group>";
+		};
+		A851F03B1D52BD23001A768E /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				A851F03C1D52BD23001A768E /* Instructions.txt */,
+			);
+			path = docs;
+			sourceTree = "<group>";
+		};
+		A851F03D1D52BD23001A768E /* src */ = {
+			isa = PBXGroup;
+			children = (
+				A851F03E1D52BD23001A768E /* ofxNetwork.h */,
+				A851F03F1D52BD23001A768E /* ofxNetworkUtils.h */,
+				A851F0401D52BD23001A768E /* ofxTCPClient.cpp */,
+				A851F0411D52BD23001A768E /* ofxTCPClient.h */,
+				A851F0421D52BD23001A768E /* ofxTCPManager.cpp */,
+				A851F0431D52BD23001A768E /* ofxTCPManager.h */,
+				A851F0441D52BD23001A768E /* ofxTCPServer.cpp */,
+				A851F0451D52BD23001A768E /* ofxTCPServer.h */,
+				A851F0461D52BD23001A768E /* ofxUDPManager.cpp */,
+				A851F0471D52BD23001A768E /* ofxUDPManager.h */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		AAE50E341C7382A4EF10AF5A /* ofxLibwebsockets */ = {
 			isa = PBXGroup;
 			children = (
@@ -300,6 +350,7 @@
 		BB16F26B0F2B646B00518274 /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				A851F03A1D52BD23001A768E /* ofxNetwork */,
 				AAE50E341C7382A4EF10AF5A /* ofxLibwebsockets */,
 			);
 			name = addons;
@@ -433,6 +484,7 @@
 				678E130C1795153C005B6D19 /* Default.png in Resources */,
 				678E130E17951540005B6D19 /* Default@2x.png in Resources */,
 				678E131017951549005B6D19 /* Default-568h@2x~iphone.png in Resources */,
+				A851F0481D52BD23001A768E /* Instructions.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -460,6 +512,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				E4D8936E11527B74007E1F53 /* main.mm in Sources */,
+				A851F04C1D52BD23001A768E /* ofxUDPManager.cpp in Sources */,
+				A851F04A1D52BD23001A768E /* ofxTCPManager.cpp in Sources */,
+				A851F0491D52BD23001A768E /* ofxTCPClient.cpp in Sources */,
 				E4D8936F11527B74007E1F53 /* ofApp.mm in Sources */,
 				3DF25B54060482139A6C5278 /* Client.cpp in Sources */,
 				307B49E843B66060DF9584C6 /* Connection.cpp in Sources */,
@@ -467,6 +522,7 @@
 				A822ECB81D46E6D9000757E0 /* jsoncpp.cpp in Sources */,
 				1470F87A9580CAE45CC7D182 /* Protocol.cpp in Sources */,
 				24AC70DC15AEF3B02D26AF55 /* Reactor.cpp in Sources */,
+				A851F04B1D52BD23001A768E /* ofxTCPServer.cpp in Sources */,
 				A8AE3CFAAA48426DE87E2D91 /* Server.cpp in Sources */,
 				40056EA7CB900012FE5B9B47 /* Util.cpp in Sources */,
 			);

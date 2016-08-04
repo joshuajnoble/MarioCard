@@ -8,8 +8,9 @@ void ofApp::setup(){
     connected = false;
     
     // make a web socket connection that we can stream data to
-    client.connect("echo.websocket.org"); // would be great to do this with mDNS
-    client.addListener(this);
+    client.Create();
+    client.Connect("192.168.216.158",8000);
+    client.SetNonBlocking(true);
     
     switch (ofGetOrientation()) {
         case OF_ORIENTATION_DEFAULT:
@@ -61,7 +62,7 @@ void ofApp::update(){
         stringstream message;
         // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
         message << (left + 255 / 4) << ":" << (right + 255 / 4);
-        client.send(message.str());
+        client.Send(message.str().c_str(), message.str().size());
         updateFlag = false;
     }
     
@@ -198,10 +199,10 @@ void ofApp::touchMoved(ofTouchEventArgs & touch){
         right = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
     }
     
-    if(ofGetFrameNum() % frequency == 0 )
-    {
-        addPost();
-    }
+//    if(ofGetFrameNum() % frequency == 0 )
+//    {
+//        addPost();
+//    }
     
     updateFlag = true;
 }
@@ -239,50 +240,4 @@ void ofApp::gotMemoryWarning(){
 //--------------------------------------------------------------
 void ofApp::deviceOrientationChanged(int newOrientation){
     
-}
-
-void ofApp::addPost()
-{
-    float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
-    //    if(speed < 0)
-    //    {
-    //        Posts p(steer, ofGetHeight() - 20, ofGetWidth(), 0, 0.0);
-    //        posts.push_back(p);
-    //    }
-    //    else
-    //    {
-    //        Posts p(steer, 20, ofGetWidth(), ofGetHeight(), 0.0);
-    //        posts.push_back(p);
-    //    }
-}
-
-// websockets methods
-//--------------------------------------------------------------
-void ofApp::onConnect( ofxLibwebsockets::Event& args ){
-    cout<<"on connected"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onOpen( ofxLibwebsockets::Event& args ){
-    cout<<"on open"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onClose( ofxLibwebsockets::Event& args ){
-    cout<<"on close"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onIdle( ofxLibwebsockets::Event& args ){
-    //    cout<<"on idle"<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onMessage( ofxLibwebsockets::Event& args ){
-    //    cout<<"got message "<<args.message<<endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::onBroadcast( ofxLibwebsockets::Event& args ){
-    cout<<"got broadcast "<<args.message<<endl;
 }
