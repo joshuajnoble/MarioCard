@@ -1,3 +1,9 @@
+
+
+// color sensor 
+#include <Wire.h>
+#include "Adafruit_TCS34725.h"
+
 //////////////////////////////////////////////////////////////////
 // Motor
 //////////////////////////////////////////////////////////////////
@@ -20,14 +26,22 @@
 // Color Sensor
 //////////////////////////////////////////////////////////////////
 
-// color sensor 
-#include <Wire.h>
-#include "Adafruit_TCS34725.h"
+
+typedef struct {
+    double r;       // percent
+    double g;       // percent
+    double b;       // percent
+} rgb;
+
+typedef struct {
+    double h;       // angle in degrees
+    double s;       // percent
+    double v;       // percent
+} hsv;
+
 
 /* Initialise with specific int time and gain values */
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_1X);
-
-IPAddress server(192, 168, 1, 1); // this will be our server
 
 
 float hues[] = { 351.60, 194.81, 66.67, 24.11, 156.00 };
@@ -43,6 +57,9 @@ uint16_t left = 127, right = 127;
 
 void setup()
 {
+
+  Serial.begin(115200);
+  
   // set up the motor driver
   pinMode(PWMA,OUTPUT);
   pinMode(AIN1,OUTPUT);
@@ -101,7 +118,7 @@ void loop()
   
   if (Serial.available() > 0) {
       
-    String t = Serial.readUntil("\n");
+    String t = Serial.readStringUntil('\n');
     
     left = strtol(&t[0], NULL, 0);
     right = (int) strtol(&t[4], NULL, 0);
@@ -164,3 +181,47 @@ void motor_control(char motor, char direction, int speed)
   }
 }
 
+
+hsv rgb2hsv(rgb in)
+{
+    hsv         out;
+    double      min, max, delta;
+
+    min = in.r < in.g ? in.r : in.g;
+    min = min  < in.b ? min  : in.b;
+
+    max = in.r > in.g ? in.r : in.g;
+    max = max  > in.b ? max  : in.b;
+
+    out.v = max;                                // v
+    delta = max - min;
+    if (delta < 0.00001)
+    {
+        out.s = 0;
+        out.h = 0; // undefined, maybe nan?
+        return out;
+    }
+    if( max > 0.0 ) { // NOTE: if Max is == 0, this divide would cause a crash
+        out.s = (delta / max);                  // s
+    } else {
+        // if max is 0, then r = g = b = 0              
+            // s = 0, v is undefined
+        out.s = 0.0;
+        out.h = NAN;                            // its now undefined
+        return out;
+    }
+    if( in.r >= max )                           // > is bogus, just keeps compilor happy
+        out.h = ( in.g - in.b ) / delta;        // between yellow & magenta
+    else
+    if( in.g >= max )
+        out.h = 2.0 + ( in.b - in.r ) / delta;  // between cyan & yellow
+    else
+        out.h = 4.0 + ( in.r - in.g ) / delta;  // between magenta & cyan
+
+    out.h *= 60.0;                              // degrees
+
+    if( out.h < 0.0 )
+        out.h += 360.0;
+
+    return out;
+}
