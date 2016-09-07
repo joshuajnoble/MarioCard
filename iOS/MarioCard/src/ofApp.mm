@@ -51,6 +51,8 @@ void ofApp::setup(){
     left = 0;
     right = 0;
     
+    carIcon.load("car2.png");
+
 }
 
 //--------------------------------------------------------------
@@ -166,6 +168,8 @@ void ofApp::draw(){
         ofEndShape();
         
     }
+    
+    ofPopMatrix();
     
     
 }

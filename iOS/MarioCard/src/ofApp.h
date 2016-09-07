@@ -29,18 +29,19 @@ class ofApp : public ofxiOSApp {
         void gotMemoryWarning();
         void deviceOrientationChanged(int newOrientation);
     
-    int left, right;
-    ofxUDPManager client;
-    
-    bool connected;
-    
-    float speed;
-    bool updateFlag;
-    
-    ofPolyline arc;
-    deque<arcPoint> arcPoints;
-    
-    ofMesh mesh;
+        int left, right;
+        ofxUDPManager client;
+        
+        bool connected;
+        
+        float speed;
+        bool updateFlag;
+        
+        ofPolyline arc;
+        deque<arcPoint> arcPoints;
+        
+        ofMesh mesh;
+        ofImage carIcon;
 
 };
 
