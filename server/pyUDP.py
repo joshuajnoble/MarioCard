@@ -7,8 +7,8 @@ import socket
 
 
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-# Listen on port 8000 (to all IP addresses on this system)
-listen_addr = ("", 8000)
+# Listen on port 3000 (to all IP addresses on this system)
+listen_addr = ("", 3000)
 UDPSock.bind(listen_addr)
 
 controllers = []
