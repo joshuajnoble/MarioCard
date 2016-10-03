@@ -1,10 +1,14 @@
 #include "ofApp.h"
 
-const int frequency = 10;
-
-
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup(){	
+
+    
+    coreMotion.setupMagnetometer();
+    coreMotion.setupGyroscope();
+    coreMotion.setupAccelerometer();
+    coreMotion.setupAttitude(CMAttitudeReferenceFrameXMagneticNorthZVertical);
+    
     connected = false;
     
     // make a web socket connection that we can stream data to
@@ -52,11 +56,16 @@ void ofApp::setup(){
     right = 0;
     
     carIcon.load("car2.png");
-
+    
+    coreMotion.resetAttitude();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    coreMotion.update();
+    
+    left = ofMap(coreMotion.getPitch(), -1.4, 1.4, -127, 127);
+    right = ofMap(coreMotion.getPitch(), -1.4, 1.4, 127, -127);
     
     // send a message over our socket about our speed & position
     if(ofGetElapsedTimeMillis() % 100 == 0) // 10hz refresh?
@@ -69,7 +78,7 @@ void ofApp::update(){
     }
     
     // figure out speed and direction from L/R tread
-    speed = ofMap( left + right, -254, 254, 0.03, -0.03);
+    //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
     float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
     
     // make a brand new arc using our steer
@@ -125,23 +134,23 @@ void ofApp::update(){
             arcPoints.push_front(p);
         }
     }
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
     // clear
     ofBackground(0, 0, 0);
     
     ofEnableAlphaBlending();
     ofSetColor(0, 255, 0);
     
-    int w = ofGetWidth();
-    int h = ofGetHeight();
-    
-    // draw our controls
-    ofDrawRectangle(0, h/2, 50, ofMap(left, -127, 127, -h/2, h/2));
-    ofDrawRectangle(w - 50, h/2, 50, ofMap(right, -127, 127, -h/2, h/2));
+//    int w = ofGetWidth();
+//    int h = ofGetHeight();
+//    
+//    // draw our controls
+//    ofDrawRectangle(0, h/2, 50, ofMap(left, -127, 127, -h/2, h/2));
+//    ofDrawRectangle(w - 50, h/2, 50, ofMap(right, -127, 127, -h/2, h/2));
     
     ofPushMatrix();
     ofTranslate(0, 20);
@@ -173,54 +182,38 @@ void ofApp::draw(){
     ofPopMatrix();
     
     ofSetColor(255, 255, 255);
-    carIcon.draw(ofGetWidth()/2, ofGetHeight() - (carIcon.getHeight()/4), carIcon.getWidth()/4, carIcon.getHeight()/4);
+    carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
+    
+//    ofSetColor(255, 255, 0);
+//    ofDrawBitmapString(ofToString(coreMotion.getRoll(),3), 20, 100);
+//    ofDrawBitmapString(ofToString(coreMotion.getPitch(),3), 120, 100);
+//    ofDrawBitmapString(ofToString(coreMotion.getYaw(),3), 220, 100);
+
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::touchDown(ofTouchEventArgs & touch){
-    if(touch.x < ofGetWidth()/2)
-    {
-        left = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
-    }
-    else
-    {
-        right = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
-    }
-    updateFlag = true;
+    speed = ofMap(touch.y, 0, ofGetHeight(), 0.03, -0.03);
 }
 
 //--------------------------------------------------------------
 void ofApp::touchMoved(ofTouchEventArgs & touch){
-    if(touch.x < ofGetWidth()/2)
-    {
-        left = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
-    }
-    else
-    {
-        right = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
-    }
-    
-//    if(ofGetFrameNum() % frequency == 0 )
-//    {
-//        addPost();
-//    }
-    
-    updateFlag = true;
+    speed = ofMap(touch.y, 0, ofGetHeight(), 0.03, -0.03);
 }
 
 //--------------------------------------------------------------
 void ofApp::touchUp(ofTouchEventArgs & touch){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::touchDoubleTap(ofTouchEventArgs & touch){
-    
+
 }
 
 //--------------------------------------------------------------
@@ -230,20 +223,20 @@ void ofApp::touchCancelled(ofTouchEventArgs & touch){
 
 //--------------------------------------------------------------
 void ofApp::lostFocus(){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::gotFocus(){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::gotMemoryWarning(){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::deviceOrientationChanged(int newOrientation){
-    
+
 }
