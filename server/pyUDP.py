@@ -57,13 +57,13 @@ def getColor(self, address, message):
 	print "GET COLOR " + str(message)	
 	for joint in self.cartToController:
 		if(joint['cart'] == address):
-	try:
-		currentGameEvent = int(message)
-		currentGameEventOwner = address
-		t = Timer(2.0, clearGameState)
-	except ValueError:
-		print "Value error parsing color"		
-			return
+			try:
+				currentGameEvent = int(message)
+				currentGameEventOwner = address
+				t = Timer(2.0, clearGameState)
+			except ValueError:
+				print "Value error parsing color"
+				return
 
 def getSpeed(message):
 	l = int(message.split(':')[0]) - 127

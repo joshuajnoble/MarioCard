@@ -4,7 +4,7 @@
 char ssid[] = "mariocard";  //  your network SSID (name)
 //char pass[] = "cartattack";       // your network password
 
-IPAddress cartServer(192, 168, 1, 1); // time.nist.gov NTP server
+IPAddress cartServer(192, 168, 42, 1); // server always lives at this address
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP udp;
 
