@@ -66,8 +66,8 @@ def getColor(self, address, message):
 				return
 
 def getSpeed(message):
-	l = int(message.split(':')[0]) - 127
-	r = int(message.split(':')[1]) - 127
+	l = int(message.split(':')[1]) - 127
+	r = int(message.split(':')[2]) - 127
 	return l,r
 
 
