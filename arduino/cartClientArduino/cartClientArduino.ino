@@ -8,12 +8,12 @@
 // Motor
 //////////////////////////////////////////////////////////////////
 
-#define PWMA 14
-#define PWMB 15
-#define AIN1 1
-#define AIN2 0
-#define BIN1 3
-#define BIN2 4
+#define PWML 14
+#define PWMR 15
+#define RBACKWARD 9
+#define RFORWARD 10
+#define LFORWARD 12
+#define LBACKWARD 11
 #define STBY 2
 #define MOTOR_A 0
 #define MOTOR_B 1
@@ -43,7 +43,7 @@ typedef struct {
 /* Initialise with specific int time and gain values */
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_1X);
 
-
+const int MESSAGE_SIZE = 7;
 float hues[] = { 351.60, 194.81, 66.67, 24.11, 156.00 };
 String colorNames[] = {"purple", "blue", "yellow", "orange", "green" };
 
@@ -107,19 +107,37 @@ void loop()
     {
       if (fabs(hues[i] - outColor.h) < 20.0)
       {
-        Serial.println(colorNames[i]);
+        Serial1.println(colorNames[i]);
       }
     }
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  // wifi loop
+  // esp comm loop
   ////////////////////////////////////////////////////////////////////////////////////////////////
   
-  if (Serial.available() > 0) {
+  if (Serial1.available() > 0) {
       
-    String t = Serial.readStringUntil('\n');
-    
+    // Get next command from Serial (add 1 for final 0)
+    char input[MESSAGE_SIZE + 1];
+    byte size = Serial.readBytes(input, MESSAGE_SIZE);
+    // Add the final 0 to end the C string
+    input[size] = 0;
+
+    *separator = 0;
+    int servoId = atoi(command);
+    ++separator;
+    int position = atoi(separator);
+  
+    char* separator = strchr(input, ':');
+    if (separator != 0)
+    {
+        // Actually split the string in 2: replace ':' with 0
+       
+
+        // Do something with servoId and position
+    }
+  
     left = strtol(&t[0], NULL, 0);
     right = (int) strtol(&t[4], NULL, 0);
     
@@ -142,44 +160,46 @@ void loop()
 // Motor
 //////////////////////////////////////////////////////////////////
 
-//Turns off the outputs of the Motor Driver when true
-void motor_standby(char standby)
-{
-  if (standby == true) digitalWrite(STBY,LOW);
-  else digitalWrite(STBY,HIGH);
+void setMotors(uint8_t left, uint8_t right)
+{ 
+
+  // set motor intensity (pwm)
+  
+  if (left == 0) {
+    digitalWrite(PWML, LOW);
+  } else {
+    analogWrite(PWML, abs(left - 127));
+  }
+
+  if (right == 0) {
+    digitalWrite(PWMR, LOW);
+  } else {
+    analogWrite(PWMR, abs(right - 127));
+  }
+
+  // set h-bridge direction (bool)
+  
+  if (left > 0) {
+    digitalWrite(LFORWARD, HIGH);
+    digitalWrite(LBACKWARD, LOW);
+  } else {
+    digitalWrite(LFORWARD, LOW);
+    digitalWrite(LBACKWARD, HIGH);
+  }
+
+  // RIGHT FORWARD
+  if (right < 0) {
+    digitalWrite(RBACKWARD, LOW);
+    digitalWrite(RFORWARD, HIGH);
+  } 
+  // RIGHT BACKWARD
+  else {
+    digitalWrite(RBACKWARD, HIGH);
+    digitalWrite(RFORWARD, LOW);
+  }
+  
 }
 
-void motor_control(char motor, char direction, int speed)
-{ 
-  if (motor == MOTOR_A)
-  {
-    if (direction == FORWARD)
-    {
-      digitalWrite(AIN1,HIGH);
-      digitalWrite(AIN2,LOW);
-    } 
-    else 
-    {
-      digitalWrite(AIN1,LOW);
-      digitalWrite(AIN2,HIGH);
-    }
-    analogWrite(PWMA,speed);
-  }
-  else
-  {
-    if (direction == FORWARD)  //Notice how the direction is reversed for motor_B
-    {                          //This is because they are placed on opposite sides so
-      digitalWrite(BIN1,LOW);  //to go FORWARD, motor_A spins CW and motor_B spins CCW
-      digitalWrite(BIN2,HIGH);
-    }
-    else
-    {
-      digitalWrite(BIN1,HIGH);
-      digitalWrite(BIN2,LOW);
-    }
-    analogWrite(PWMB,speed);
-  }
-}
 
 
 hsv rgb2hsv(rgb in)
