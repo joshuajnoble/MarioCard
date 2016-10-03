@@ -2,7 +2,7 @@
 #include <WiFiUdp.h>
 
 char ssid[] = "mariocard";  //  your network SSID (name)
-char pass[] = "cartattack";       // your network password
+//char pass[] = "cartattack";       // your network password
 
 IPAddress cartServer(192, 168, 1, 1); // time.nist.gov NTP server
 // A UDP instance to let us send and receive packets over UDP
@@ -15,7 +15,7 @@ void setup() {
   Serial.begin(115200);
   
   // put your setup code here, to run once:
-  WiFi.begin(ssid, pass);
+  WiFi.begin(ssid);
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
