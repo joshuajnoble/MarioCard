@@ -8,8 +8,8 @@
 // Motor
 //////////////////////////////////////////////////////////////////
 
-#define PWML 14
-#define PWMR 15
+#define PWML 6
+#define PWMR 5
 #define RBACKWARD 9
 #define RFORWARD 10
 #define LFORWARD 12
@@ -21,6 +21,9 @@
 #define REVERSE 0
 #define RIGHT 1
 #define LEFT 0
+
+#define GREEN_LED 22
+#define YELLOW_LED 14
 
 //////////////////////////////////////////////////////////////////
 // Color Sensor
@@ -41,14 +44,14 @@ typedef struct {
 
 
 /* Initialise with specific int time and gain values */
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_1X);
+//Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_1X);
+//
+//float hues[] = { 351.60, 194.81, 66.67, 24.11, 156.00 };
+//String colorNames[] = {"purple", "blue", "yellow", "orange", "green" };
+//
+//bool lastReqResponded = false;
 
 const int MESSAGE_SIZE = 7;
-float hues[] = { 351.60, 194.81, 66.67, 24.11, 156.00 };
-String colorNames[] = {"purple", "blue", "yellow", "orange", "green" };
-
-bool lastReqResponded = false;
-
 char inBuf[9];
 char outBuf[128];
 uint8_t outBufInd = 0;
@@ -58,18 +61,26 @@ uint16_t left = 127, right = 127;
 void setup()
 {
 
-  Serial.begin(115200);
+  
+  Serial1.begin(9600);
+  //while(!Serial1); // wait for serial
   
   // set up the motor driver
-  pinMode(PWMA,OUTPUT);
-  pinMode(AIN1,OUTPUT);
-  pinMode(AIN2,OUTPUT);
-  pinMode(PWMB,OUTPUT);
-  pinMode(BIN1,OUTPUT);
-  pinMode(BIN2,OUTPUT);
+  pinMode(PWML,OUTPUT);
+  pinMode(LBACKWARD,OUTPUT);
+  pinMode(LFORWARD,OUTPUT);
+  pinMode(PWMR,OUTPUT);
+  pinMode(RBACKWARD,OUTPUT);
+  pinMode(RFORWARD,OUTPUT);
   pinMode(STBY,OUTPUT);
-  motor_standby(false);        //Must set STBY pin to HIGH in order to move
   
+  digitalWrite(PWML, HIGH);
+  digitalWrite(PWMR, HIGH);
+
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(YELLOW_LED, OUTPUT);
+
+  //Serial.println(" start up ");
 
   
 }
@@ -77,12 +88,12 @@ void setup()
 
 void loop()
 {
-
-  Serial.begin(115200);
-
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // colors
   ////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  /*
+  
   uint16_t clear, red, green, blue;
   delay(3);
   tcs.getRawData(&red, &green, &blue, &clear);
@@ -111,49 +122,38 @@ void loop()
       }
     }
   }
+  
+  */
+
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // esp comm loop
   ////////////////////////////////////////////////////////////////////////////////////////////////
   
-  if (Serial1.available() > 0) {
-      
-    // Get next command from Serial (add 1 for final 0)
-    char input[MESSAGE_SIZE + 1];
-    byte size = Serial.readBytes(input, MESSAGE_SIZE);
+    if (Serial1.available() > 6) {
+
+    char input[MESSAGE_SIZE];
+    byte size = Serial1.readBytes(input, MESSAGE_SIZE);
     // Add the final 0 to end the C string
-    input[size] = 0;
-
-    *separator = 0;
-    int servoId = atoi(command);
-    ++separator;
-    int position = atoi(separator);
   
-    char* separator = strchr(input, ':');
-    if (separator != 0)
+    // Read each command pair
+    char* command = strchr(input, ':');
+    if (command != 0)
     {
-        // Actually split the string in 2: replace ':' with 0
-       
+        left = atoi(&input[0]);
+        ++command;
+        right = atoi(command);
+        setMotors(left, right);
+        digitalWrite(GREEN_LED, LOW);
+    }
 
-        // Do something with servoId and position
-    }
-  
-    left = strtol(&t[0], NULL, 0);
-    right = (int) strtol(&t[4], NULL, 0);
-    
-    if(left > 127) {
-      motor_control( MOTOR_A, FORWARD, (left - 127));
-    } else {
-      motor_control( MOTOR_A, REVERSE, (127 - left));
+    // rest is garbage, clear it
+    while(Serial1.available()) {
+      Serial1.read();
     }
     
-    if(right > 127) {
-      motor_control( MOTOR_B, FORWARD, (right - 127));
-    } else {
-      motor_control( MOTOR_B, REVERSE, (127 - right));
-    }
+    Serial1.flush();
   }
-
 }
 
 //////////////////////////////////////////////////////////////////
@@ -165,21 +165,21 @@ void setMotors(uint8_t left, uint8_t right)
 
   // set motor intensity (pwm)
   
-  if (left == 0) {
+  if (left == 127) {
     digitalWrite(PWML, LOW);
   } else {
-    analogWrite(PWML, abs(left - 127));
+    analogWrite(PWML, abs(left - 127) * 2);
   }
 
-  if (right == 0) {
+  if (right == 127) {
     digitalWrite(PWMR, LOW);
   } else {
-    analogWrite(PWMR, abs(right - 127));
+    analogWrite(PWMR, abs(right - 127) * 2);
   }
 
   // set h-bridge direction (bool)
   
-  if (left > 0) {
+  if (left > 127) {
     digitalWrite(LFORWARD, HIGH);
     digitalWrite(LBACKWARD, LOW);
   } else {
@@ -188,7 +188,7 @@ void setMotors(uint8_t left, uint8_t right)
   }
 
   // RIGHT FORWARD
-  if (right < 0) {
+  if (right > 127) {
     digitalWrite(RBACKWARD, LOW);
     digitalWrite(RFORWARD, HIGH);
   } 
