@@ -4,8 +4,11 @@
 void ofApp::setup(){
 	 connected = false;
 
+<<<<<<< HEAD
 	 ofxAccelerometer.setup();
 
+=======
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 	// make a web socket connection that we can stream data to
 //	client.Create();
 //	client.Connect("192.168.216.158", 8000);
@@ -57,6 +60,7 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
+<<<<<<< HEAD
 	accel = ofxAccelerometer.getRawAcceleration();
 
     // figure out speed and direction from L/R tread
@@ -98,6 +102,22 @@ void ofApp::update(){
         client.Send(message.str().c_str(), message.str().size());
     }
 
+=======
+    // send a message over our socket about our speed & position
+    if(ofGetElapsedTimeMillis() % 100 == 0) // 10hz refresh?
+    {
+        stringstream message;
+        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+//        message << (left + 255 / 4) << ":" << (right + 255 / 4);
+//        client.Send(message.str().c_str(), message.str().size());
+        updateFlag = false;
+    }
+
+    // figure out speed and direction from L/R tread
+    speed = ofMap( left + right, -254, 254, 0.03, -0.03);
+    float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
+
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
     // make a brand new arc using our steer
     arc.clear();
     arc.addVertex(steer, 50);
@@ -198,7 +218,10 @@ void ofApp::draw(){
 
     ofSetColor(255, 255, 255);
     carIcon.draw(ofGetWidth() / 2 - (carIcon.getWidth()/2), ofGetHeight() - (ofGetHeight()/4));
+<<<<<<< HEAD
 
+=======
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 }
 
 //--------------------------------------------------------------
@@ -218,6 +241,7 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::touchDown(int x, int y, int id){
+<<<<<<< HEAD
 //    if(x < ofGetWidth()/2)
 //    {
 //        left = ofMap(y, 0, ofGetHeight(), -127, 127);
@@ -229,10 +253,22 @@ void ofApp::touchDown(int x, int y, int id){
 //    updateFlag = true;
 
 	speed = ofMap(y, 0, ofGetHeight(), 0.03, -0.03);
+=======
+    if(x < ofGetWidth()/2)
+    {
+        left = ofMap(y, 0, ofGetHeight(), -127, 127);
+    }
+    else
+    {
+        right = ofMap(y, 0, ofGetHeight(), -127, 127);
+    }
+    updateFlag = true;
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 }
 
 //--------------------------------------------------------------
 void ofApp::touchMoved(int x, int y, int id){
+<<<<<<< HEAD
 //	if(x < ofGetWidth()/2)
 //	{
 //		left = ofMap(y, 0, ofGetHeight(), -127, 127);
@@ -245,6 +281,18 @@ void ofApp::touchMoved(int x, int y, int id){
 //	updateFlag = true;
 
 	speed = ofMap(y, 0, ofGetHeight(), 0.03, -0.03);
+=======
+	if(x < ofGetWidth()/2)
+	{
+		left = ofMap(y, 0, ofGetHeight(), -127, 127);
+	}
+	else
+	{
+		right = ofMap(y, 0, ofGetHeight(), -127, 127);
+	}
+
+	updateFlag = true;
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 
 }
 
