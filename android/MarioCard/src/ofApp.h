@@ -3,7 +3,10 @@
 #include "ofMain.h"
 #include "ofxAndroid.h"
 #include "ofxNetwork.h"
+<<<<<<< HEAD
 #include "ofxAccelerometer.h"
+=======
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 
 class arcPoint {
 public:
@@ -53,9 +56,14 @@ class ofApp : public ofxAndroidApp{
 	    deque<arcPoint> arcPoints;
 
 	    ofMesh mesh;
+<<<<<<< HEAD
 	    ofImage carIcon;
 
 	    ofVec3f accel;
 	    string udpMessage;
+=======
+
+	    ofImage carIcon;
+>>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
 
 };
