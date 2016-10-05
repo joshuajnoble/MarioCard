@@ -11,10 +11,14 @@ void ofApp::setup(){
     
     connected = false;
     
-    // make a web socket connection that we can stream data to
+    // make a udp connection that we can stream data to
     client.Create();
-    client.Connect("192.168.216.158",8000);
+    client.Connect("192.168.42.1",3000);
     client.SetNonBlocking(true);
+    
+    // now register
+    string regStr = "register_control";
+    client.Send("register_control", regStr.size());
     
     switch (ofGetOrientation()) {
         case OF_ORIENTATION_DEFAULT:
@@ -67,19 +71,42 @@ void ofApp::update(){
     left = ofMap(coreMotion.getPitch(), -1.4, 1.4, -127, 127);
     right = ofMap(coreMotion.getPitch(), -1.4, 1.4, 127, -127);
     
-    // send a message over our socket about our speed & position
-    if(ofGetElapsedTimeMillis() % 100 == 0) // 10hz refresh?
-    {
-        stringstream message;
-        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
-        message << (left + 255 / 4) << ":" << (right + 255 / 4);
-        client.Send(message.str().c_str(), message.str().size());
-        updateFlag = false;
-    }
-    
     // figure out speed and direction from L/R tread
     //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
     float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
+    
+    // send a message over our socket about our speed & position
+    if(ofGetFrameNum() % 5 == 0) // 10hz refresh?
+    {
+        
+        float trueSteer = left - right;
+        
+        int leftTread = 90 * speed;
+        int rightTread = 90 * speed;
+        
+        if(speed > 0.0)
+        {
+        
+            // all the way to the left will be -254, so slow left tread to we steer to left
+            leftTread -= ofMap(trueSteer, -254, 254, 20, -20);
+            // all the way to the right will be 254, so slow right tread to we steer to right
+            rightTread -= ofMap(trueSteer, -254, 254, -20, 20);
+        }
+        else
+        {
+            // all the way to the left will be -254, so slow left tread to we steer to left
+            leftTread += ofMap(trueSteer, -254, 254, 20, -20);
+            // all the way to the right will be 254, so slow right tread to we steer to right
+            rightTread += ofMap(trueSteer, -254, 254, -20, 20);
+        }
+        
+        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+        stringstream message;
+        message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
+        cout << message.str() << endl;
+        udpMessage = message.str();
+        client.Send(message.str().c_str(), message.str().size());
+    }
     
     // make a brand new arc using our steer
     arc.clear();
@@ -90,7 +117,7 @@ void ofApp::update(){
     // accelerate the arc points nicely for point-along-arc calculations
     for( int i = 0; i < arcPoints.size(); i++ )
     {
-        arcPoints.at(i).position += speed;
+        arcPoints.at(i).position += speed * 0.03;
         arcPoints.at(i).position = roundf(arcPoints.at(i).position * 60) / 60.0;
     }
     
@@ -102,7 +129,7 @@ void ofApp::update(){
         if(arcPoints.at(i).position < 0.0)
         {
             
-            cout << (arcPoints.begin() + i)->fill << endl;
+            //cout << (arcPoints.begin() + i)->fill << endl;
             arcPoints.erase(arcPoints.begin() + i);
             arcPoint p;
             p.position = 1.0;
@@ -119,7 +146,7 @@ void ofApp::update(){
         
         if(arcPoints.at(i).position > 1.0)
         {
-            cout << (arcPoints.begin() + i)->fill << endl;
+            //cout << (arcPoints.begin() + i)->fill << endl;
             arcPoints.erase(arcPoints.begin() + i);
             arcPoint p;
             p.position = 0.0;
@@ -144,13 +171,6 @@ void ofApp::draw(){
     
     ofEnableAlphaBlending();
     ofSetColor(0, 255, 0);
-    
-//    int w = ofGetWidth();
-//    int h = ofGetHeight();
-//    
-//    // draw our controls
-//    ofDrawRectangle(0, h/2, 50, ofMap(left, -127, 127, -h/2, h/2));
-//    ofDrawRectangle(w - 50, h/2, 50, ofMap(right, -127, 127, -h/2, h/2));
     
     ofPushMatrix();
     ofTranslate(0, 20);
@@ -184,6 +204,12 @@ void ofApp::draw(){
     ofSetColor(255, 255, 255);
     carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
     
+    stringstream ss;
+    ss <<  left << " " << right;
+    
+    ofDrawBitmapString(ss.str(), 30, 30);
+    ofDrawBitmapString(udpMessage, 30, 50);
+    
 //    ofSetColor(255, 255, 0);
 //    ofDrawBitmapString(ofToString(coreMotion.getRoll(),3), 20, 100);
 //    ofDrawBitmapString(ofToString(coreMotion.getPitch(),3), 120, 100);
@@ -198,12 +224,12 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::touchDown(ofTouchEventArgs & touch){
-    speed = ofMap(touch.y, 0, ofGetHeight(), 0.03, -0.03);
+    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
 }
 
 //--------------------------------------------------------------
 void ofApp::touchMoved(ofTouchEventArgs & touch){
-    speed = ofMap(touch.y, 0, ofGetHeight(), 0.03, -0.03);
+    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1); // used to be 0.03 to -0.03
 }
 
 //--------------------------------------------------------------
