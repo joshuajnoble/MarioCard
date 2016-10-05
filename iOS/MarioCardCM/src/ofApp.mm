@@ -102,7 +102,7 @@ void ofApp::update(){
         
         // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
         stringstream message;
-        message << "speed:" << max(0, (leftTread + 127)) << ":" << max(0, (rightTread + 127));
+        message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
         cout << message.str() << endl;
         udpMessage = message.str();
         client.Send(message.str().c_str(), message.str().size());
