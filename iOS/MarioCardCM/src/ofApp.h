@@ -45,6 +45,7 @@ class ofApp : public ofxiOSApp {
     
     ofMesh mesh;
     ofImage carIcon;
+    string udpMessage;
 };
 
 
