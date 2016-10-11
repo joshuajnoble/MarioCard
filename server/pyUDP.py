@@ -7,6 +7,7 @@ import socket
 import time
 import threading
 from threading import Lock
+from threading import Thread
 
 
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -51,22 +52,22 @@ def add_cart( address):
 	print "add_cart " + str(address)
 	
 	c = cart(address, time.time())
-
 	carts.append(c)
-	if(len(carts) > len(controllers) and len(controllers) > len(cart_to_controller)):
-		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'cachedSpeed':[127, 127]}
-		print "adding joint cart " + str(joint['cart']) + " " + str(joint['controller'])
+	# are there more controllers and carts than joints?
+	if(len(carts) > len(cart_to_controller) and len(controllers) > len(cart_to_controller)):
+		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127]}
+		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
 
 def add_controller( address):
 	print "add_controller " + str(address)
 
 	cont = controller(address, time.time())
-
 	controllers.append(cont)
+	# are there more controllers and carts than joints?
 	if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-		joint = {'cart':carts[len(carts)-1], 'controller':address, 'cachedSpeed':[127, 127]}
-		print "adding joint cart " + str(joint['cart']) + " " + str(joint['controller'])
+		joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127]}
+		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
 
 def remove_controller( address ):
@@ -91,10 +92,10 @@ def route_control_signal( address, message):
 	for joint in cart_to_controller:
 		if(joint['controller'].addr == address):
 			l,r = get_speed(message)
-			joint['cachedSpeed'][0] = l
-			joint['cachedSpeed'][1] = r
+			joint['speed'][0] = l
+			joint['speed'][1] = r
 			# now doing this in the game update loop
-			#UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			#UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'])
 			return
 
 def get_color( address, message):
@@ -132,35 +133,35 @@ def game_update():
 # game run functions
 def run_unmodified():
 	for joint in cart_to_controller:
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'].addr)
+		UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
 def slow_down():
 	for joint in cart_to_controller:
 		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*0.5, joint['cachedSpeed'][1]*0.5), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0]*0.5, joint['speed'][1]*0.5), joint['cart'].addr)
 		else:
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
 def circle():
 	for joint in cart_to_controller:
 		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*-1, joint['cachedSpeed'][1]*-1), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0]*-1, joint['speed'][1]*-1), joint['cart'].addr)
 		else:
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
 def skew_right():
 	for joint in cart_to_controller:
 		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]*0.6), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]*0.6), joint['cart'].addr)
 		else:
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
 def skew_left():
 	for joint in cart_to_controller:
 		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*0.6, joint['cachedSpeed'][1]), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0]*0.6, joint['speed'][1]), joint['cart'].addr)
 		else:
-			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'].addr)
+			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
 # pad strings nicely
 def stringify( left, right):
@@ -190,11 +191,12 @@ def stringify( left, right):
 def clearGameState():
 	currentGameEvent = -1
 
+
+
 def keep_alive_cart(addr):
 	for c in carts:
 		if(c.addr == addr):
 			c.timestamp = time.time()
-
 	#prune the list
 	for c in carts:
 		if(time.time() - c.timestamp < 5):
@@ -205,7 +207,6 @@ def keep_alive_controller(addr):
 	for c in controllers:
 		if(c.addr == addr):
 			c.timestamp = time.time()
-
 	#prune the list
 	for c in controllers:
 		if(time.time() - c.timestamp < 5):
@@ -216,18 +217,19 @@ def keep_alive_controller(addr):
 
 
 ##############################################################################
+# make a lock
 thread_lock = Lock()
 
-
+#functions to be called in threads
 def run_game():
-	while true:
+	while True:
 		thread_lock.acquire()
 		game_update()
-		sleep(0.1)
+		time.sleep(0.1)
 		thread_lock.release()
 
 #now run the UDP thread
-def run_udp
+def run_udp():
 	while True:
 		thread_lock.acquire()
 		data,addr = UDPSock.recvfrom(64)
@@ -254,5 +256,9 @@ def run_udp
 # now start the threads
 game_thread = Thread(target = run_game)
 udp_thread = Thread(target = run_udp)
+
+game_thread.start()
+udp_thread.start()
+
 
 
