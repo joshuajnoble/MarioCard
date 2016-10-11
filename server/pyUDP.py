@@ -86,11 +86,11 @@ def add_controller( address):
 
 def remove_controller( address ):
 	print "remove controller "
-	[controllers.remove(c) for c in controllers if c['addr'] == address]
+	[controllers.remove(c) for c in controllers if c.addr == address]
 
 def remove_cart( address ):
 	print "remove controller "
-	[carts.remove(c) for c in carts if c['addr'] == address]
+	[carts.remove(c) for c in carts if c.addr == address]
 
 def remove_pair( address):
 	try:
