@@ -5,6 +5,9 @@
 
 import socket
 import time
+import threading
+from threading import Lock
+
 
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 # Listen on port 3000 (to all IP addresses on this system)
@@ -68,12 +71,16 @@ def add_controller( address):
 
 def remove_controller( address ):
 	print "remove controller "
-	controllers.remove(address)
+	[controllers.remove(c) for c in controllers if c['addr'] == address]
+
+def remove_cart( address ):
+	print "remove controller "
+	[carts.remove(c) for c in carts if c['addr'] == address]
 
 def remove_pair( address):
 	try:
 		for joint in cart_to_controller:
-			if(joint['cart'] == address or joint['cart'] == address):
+			if(joint['cart'] == address or joint['controller'] == address):
 				cart_to_controller.remove(joint)
 				return
 	except NameError:
@@ -183,31 +190,46 @@ def stringify( left, right):
 def clearGameState():
 	currentGameEvent = -1
 
-def keep_alive(addr):
+def keep_alive_cart(addr):
 	for c in carts:
 		if(c.addr == addr):
 			c.timestamp = time.time()
 
 	#prune the list
-	carts = [c for c in carts if check_timestamp(x)]
+	for c in carts:
+		if(time.time() - c.timestamp < 5):
+			remove_cart(c.addr)
+			remove_pair(c.addr)
 
-def check_timestamp(_cart):
-	if(time.time() - _cart.timestamp < 5):
-		return true
-	else:
-		return false
+def keep_alive_controller(addr):
+	for c in controllers:
+		if(c.addr == addr):
+			c.timestamp = time.time()
+
+	#prune the list
+	for c in controllers:
+		if(time.time() - c.timestamp < 5):
+			remove_controller(c.addr)
+			remove_pair(c.addr)
+
 
 
 
 ##############################################################################
+thread_lock = Lock()
+
+
 def run_game():
 	while true:
+		thread_lock.acquire()
 		game_update()
 		sleep(0.1)
+		thread_lock.release()
 
 #now run the UDP thread
 def run_udp
 	while True:
+		thread_lock.acquire()
 		data,addr = UDPSock.recvfrom(64)
 		#print data.strip()
 		datastr = str(data.strip())
@@ -227,6 +249,7 @@ def run_udp
 			keep_alive(addr)
 		else:
 			print "bad command  " + datastr
+		thread_lock.release()
 
 # now start the threads
 game_thread = Thread(target = run_game)
