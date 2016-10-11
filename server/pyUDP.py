@@ -29,6 +29,13 @@ class cart:
 	addr = ""
 	timestamp = 0
 
+	def __getitem__(self, key):
+		# if key is of invalid type or value, the list values will raise the error
+		return self.values[key]
+
+	def __setitem__(self, key, value):
+		self.values[key] = value
+
 	def __init__(self, address, timestamp):
 		self.addr = address
 		self.timestamp = timestamp
@@ -39,6 +46,13 @@ class cart:
 class controller:
 	addr = ""
 	timestamp = 0
+
+	def __getitem__(self, key):
+		# if key is of invalid type or value, the list values will raise the error
+		return self.values[key]
+
+	def __setitem__(self, key, value):
+		self.values[key] = value
 
 	def __init__(self, address, timestamp):
 		self.addr = address
