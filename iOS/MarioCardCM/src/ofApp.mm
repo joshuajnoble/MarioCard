@@ -1,8 +1,25 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup(){	
-
+void ofApp::setup(){
+    
+    isConnected = false;
+    
+    disconnectSprite.setText("disconnect");
+    disconnectSprite.setPosition(ofVec2f(20, 30));
+    disconnectSprite.setScale(ofVec2f(100, 30));
+    
+    reconnectSprite.setText("reconnect");
+    reconnectSprite.setPosition(ofVec2f(20, 65));
+    reconnectSprite.setScale(ofVec2f(100, 30));
+    
+    spinSprite.setText("spin");
+    spinSprite.setPosition(ofVec2f(20, 100));
+    spinSprite.setScale(ofVec2f(100, 30));
+    
+    reconnectSprite.setText("reconnect");
+    reconnectSprite.setPosition(ofVec2f(20, 65));
+    reconnectSprite.setScale(ofVec2f(100, 30));
     
     coreMotion.setupMagnetometer();
     coreMotion.setupGyroscope();
@@ -18,7 +35,9 @@ void ofApp::setup(){
     
     // now register
     string regStr = "register_control";
-    client.Send("register_control", regStr.size());
+    client.Send(regStr.c_str(), regStr.size());
+    
+    isConnected = true;
     
     switch (ofGetOrientation()) {
         case OF_ORIENTATION_DEFAULT:
@@ -60,12 +79,20 @@ void ofApp::setup(){
     right = 0;
     
     carIcon.load("car2.png");
-    
     coreMotion.resetAttitude();
+    
+    mouseDown = false;
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update()
+{
+    
+    if(!mouseDown)
+    {
+        speed *= 0.99;
+    }
+    
     coreMotion.update();
     
     left = ofMap(coreMotion.getPitch(), -1.4, 1.4, -127, 127);
@@ -75,37 +102,41 @@ void ofApp::update(){
     //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
     float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
     
-    // send a message over our socket about our speed & position
-    if(ofGetFrameNum() % 5 == 0) // 10hz refresh?
+    if(isConnected)
     {
-        
-        float trueSteer = left - right;
-        
-        int leftTread = 90 * speed;
-        int rightTread = 90 * speed;
-        
-        if(speed > 0.0)
+    
+        // send a message over our socket about our speed & position
+        if(ofGetFrameNum() % 5 == 0) // 10hz refresh?
         {
-        
-            // all the way to the left will be -254, so slow left tread to we steer to left
-            leftTread -= ofMap(trueSteer, -254, 254, 20, -20);
-            // all the way to the right will be 254, so slow right tread to we steer to right
-            rightTread -= ofMap(trueSteer, -254, 254, -20, 20);
+            
+            float trueSteer = left - right;
+            
+            int leftTread = 90 * speed;
+            int rightTread = 90 * speed;
+            
+            if(speed > 0.0)
+            {
+            
+                // all the way to the left will be -254, so slow left tread to we steer to left
+                leftTread -= ofMap(trueSteer, -254, 254, -30, 30);
+                // all the way to the right will be 254, so slow right tread to we steer to right
+                rightTread -= ofMap(trueSteer, -254, 254, 30, -30);
+            }
+            else
+            {
+                // all the way to the left will be -254, so slow left tread to we steer to left
+                leftTread += ofMap(trueSteer, -254, 254, -30, 30);
+                // all the way to the right will be 254, so slow right tread to we steer to right
+                rightTread += ofMap(trueSteer, -254, 254, 30, -30);
+            }
+            
+            // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+            stringstream message;
+            message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
+            //cout << message.str() << endl;
+            udpMessage = message.str();
+            client.Send(message.str().c_str(), message.str().size());
         }
-        else
-        {
-            // all the way to the left will be -254, so slow left tread to we steer to left
-            leftTread += ofMap(trueSteer, -254, 254, 20, -20);
-            // all the way to the right will be 254, so slow right tread to we steer to right
-            rightTread += ofMap(trueSteer, -254, 254, -20, 20);
-        }
-        
-        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
-        stringstream message;
-        message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
-        cout << message.str() << endl;
-        udpMessage = message.str();
-        client.Send(message.str().c_str(), message.str().size());
     }
     
     // make a brand new arc using our steer
@@ -204,17 +235,32 @@ void ofApp::draw(){
     ofSetColor(255, 255, 255);
     carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
     
-    stringstream ss;
-    ss <<  left << " " << right;
-    
-    ofDrawBitmapString(ss.str(), 30, 30);
-    ofDrawBitmapString(udpMessage, 30, 50);
-    
-//    ofSetColor(255, 255, 0);
-//    ofDrawBitmapString(ofToString(coreMotion.getRoll(),3), 20, 100);
-//    ofDrawBitmapString(ofToString(coreMotion.getPitch(),3), 120, 100);
-//    ofDrawBitmapString(ofToString(coreMotion.getYaw(),3), 220, 100);
+//    stringstream ss;
+//    ss <<  left << " " << right;
+//    
+//    ofDrawBitmapString(ss.str(), 30, 30);
+//    ofDrawBitmapString(udpMessage, 30, 50);
 
+    ofPushMatrix();
+    ofTranslate(reconnectSprite.getBounds().x, reconnectSprite.getBounds().y);
+    reconnectSprite.draw();
+    ofPopMatrix();
+    
+    ofPushMatrix();
+    ofTranslate(disconnectSprite.getBounds().x, disconnectSprite.getBounds().y);
+    disconnectSprite.draw();
+    ofPopMatrix();
+    
+    ofPushMatrix();
+    ofTranslate(spinSprite.getBounds().x, spinSprite.getBounds().y);
+    spinSprite.draw();
+    ofPopMatrix();
+    
+    ofSetColor(255, 0, 0);
+    ofDrawRectangle(ofGetWidth() - 40, (ofGetHeight()/2), 42, speed * -160);
+    ofSetColor(255, 255, 255);
+    
+    
 }
 
 //--------------------------------------------------------------
@@ -224,17 +270,32 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::touchDown(ofTouchEventArgs & touch){
-    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+    
+    if( disconnectSprite.hitTest(touch))
+    {
+        disconnect();
+    }
+    else if( reconnectSprite.hitTest(touch))
+    {
+        reconnect();
+    }
+    else
+    {
+        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+        mouseDown = true;
+    }
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::touchMoved(ofTouchEventArgs & touch){
-    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1); // used to be 0.03 to -0.03
+    // used to be 0.03 to -0.03
+    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
 }
 
 //--------------------------------------------------------------
 void ofApp::touchUp(ofTouchEventArgs & touch){
-
+    mouseDown = false;
 }
 
 //--------------------------------------------------------------
@@ -245,6 +306,42 @@ void ofApp::touchDoubleTap(ofTouchEventArgs & touch){
 //--------------------------------------------------------------
 void ofApp::touchCancelled(ofTouchEventArgs & touch){
     
+}
+
+void ofApp::spin()
+{
+    cout << " spin " << endl;
+    if(isConnected)
+    {
+        string spinStr = "spin_control";
+        client.Send(spinStr.c_str(), spinStr.size());
+    }
+}
+
+void ofApp::disconnect()
+{
+    cout << " disconnect " << endl;
+    if(isConnected)
+    {
+        isConnected = false;
+        string disconnectStr = "disconnect_control";
+        client.Send(disconnectStr.c_str(), disconnectStr.size());
+        client.Close();
+    }
+}
+
+void ofApp::reconnect()
+{
+    cout << " reconnect " << endl;
+    client.Create();
+    client.Connect("192.168.42.1",3000);
+    client.SetNonBlocking(true);
+    
+    // now register
+    string regStr = "register_control";
+    client.Send("register_control", regStr.size());
+    
+    isConnected = true;
 }
 
 //--------------------------------------------------------------

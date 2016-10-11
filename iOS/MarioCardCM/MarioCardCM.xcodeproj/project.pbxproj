@@ -23,6 +23,7 @@
 		67DFA53619F92A69003B3434 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67DFA53419F92A5E003B3434 /* Accelerate.framework */; };
 		886016D37D80D288135B4C20 /* ofxTCPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B560327B8C4DAAF65E89BD37 /* ofxTCPClient.cpp */; };
 		A823DB0F1D88C0320023095F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A823DB0E1D88C0320023095F /* CoreMotion.framework */; };
+		A861A4941DA5B481007C45C3 /* SimpleSprite.mm in Sources */ = {isa = PBXBuildFile; fileRef = A861A4931DA5B481007C45C3 /* SimpleSprite.mm */; };
 		AF0FCA14C2D675E87832E0D1 /* ofxTCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2DE43F78FD701A45AEEEFF63 /* ofxTCPServer.cpp */; };
 		BB16EBD20F2B2A9500518274 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD10F2B2A9500518274 /* OpenGLES.framework */; };
 		BB16EBD90F2B2AB500518274 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD80F2B2AB500518274 /* QuartzCore.framework */; };
@@ -74,6 +75,8 @@
 		89E8B409C0F26FC30BD8CD2C /* ofxTCPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPManager.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPManager.h; sourceTree = SOURCE_ROOT; };
 		92203683BC545795F23D81BF /* ofxTCPServer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPServer.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPServer.h; sourceTree = SOURCE_ROOT; };
 		A823DB0E1D88C0320023095F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		A861A4921DA5B481007C45C3 /* SimpleSprite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleSprite.h; sourceTree = "<group>"; };
+		A861A4931DA5B481007C45C3 /* SimpleSprite.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SimpleSprite.mm; sourceTree = "<group>"; };
 		B560327B8C4DAAF65E89BD37 /* ofxTCPClient.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPClient.cpp; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPClient.cpp; sourceTree = SOURCE_ROOT; };
 		BB16EBD10F2B2A9500518274 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BB16EBD80F2B2AB500518274 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -268,6 +271,8 @@
 		E4D8936A11527B74007E1F53 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				A861A4921DA5B481007C45C3 /* SimpleSprite.h */,
+				A861A4931DA5B481007C45C3 /* SimpleSprite.mm */,
 				E4D8936B11527B74007E1F53 /* main.mm */,
 				E4D8936D11527B74007E1F53 /* ofApp.mm */,
 				E4D8936C11527B74007E1F53 /* ofApp.h */,
@@ -376,6 +381,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A861A4941DA5B481007C45C3 /* SimpleSprite.mm in Sources */,
 				E4D8936E11527B74007E1F53 /* main.mm in Sources */,
 				E4D8936F11527B74007E1F53 /* ofApp.mm in Sources */,
 				22958A50C20095A9681E3701 /* ofxCoreMotion.mm in Sources */,

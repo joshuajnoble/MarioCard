@@ -4,6 +4,7 @@
 #include "ofxCoreMotion.h"
 #include "ofxiOSExtras.h"
 #include "ofxNetwork.h"
+#include "SimpleSprite.h"
 
 class arcPoint {
 public:
@@ -30,6 +31,11 @@ class ofApp : public ofxiOSApp {
         void gotMemoryWarning();
         void deviceOrientationChanged(int newOrientation);
     
+    // these are comm methods for the server
+    void disconnect();
+    void reconnect();
+    void spin();
+    
         ofxCoreMotion coreMotion;
     
     int left, right;
@@ -46,6 +52,11 @@ class ofApp : public ofxiOSApp {
     ofMesh mesh;
     ofImage carIcon;
     string udpMessage;
+    
+    bool isConnected;
+    bool mouseDown;
+    
+    SimpleSprite disconnectSprite, reconnectSprite, spinSprite;
 };
 
 
