@@ -60,7 +60,7 @@ def routeControlSignal( address, message):
 			return
 
 def getColor( address, message):
-	print "GET COLOR " + str(message)	
+	print "color " + str(message)	
 	for joint in cartToController:
 		if(joint['cart'] == address):
 			try:
@@ -159,5 +159,11 @@ while True:
 		getColor(addr, data)
 	elif "speed" in dataStr:
 		routeControlSignal(addr, data)
+	elif "disconnect_control" in dataStr:
+		removeController(addr)
+	elif "color" in dataStr:
+		print dataStr
+	elif "keep_alive" in dataStr:
+		print "keep alive"
 	else:
-		print "bad command"
+		print "bad command  " + dataStr
