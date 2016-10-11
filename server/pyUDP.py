@@ -7,7 +7,7 @@ import socket
 
 
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-# Listen on port 8000 (to all IP addresses on this system)
+# Listen on port 3000 (to all IP addresses on this system)
 listen_addr = ("", 3000)
 UDPSock.bind(listen_addr)
 
@@ -20,42 +20,48 @@ currentGameEvent = -1
 currentGameEventOwner = ""
 
 
-def addCart(self, address):
-	print "addCart"
-	self.carts.append(address)
-	if(len(self.carts) > len(self.controllers) and len(self.controllers) > len(self.cartToController)):
-		joint = {'cart':handler, 'cart':controllers[len(controllers)-1], 'cachedSpeed':[127, 127]}
-		self.cartToController.append(joint)
+def addCart( address):
+	print "addCart " + str(address)
+	carts.append(address)
+	if(len(carts) > len(controllers) and len(controllers) > len(cartToController)):
+		joint = {'cart':address, 'controller':controllers[len(controllers)-1], 'cachedSpeed':[127, 127]}
+		print "adding joint cart " + str(joint['cart']) + " " + str(joint['controller'])
+		cartToController.append(joint)
 
-def addController(self, address):
-	print "addController"
-	self.controllers.append(address)
-	if(len(self.controllers) > len(self.cartToController) and len(self.carts) > len(self.cartToController)):
-		joint = {'cart':self.carts[len(self.carts)-1], 'cart':handler, 'cachedSpeed':[127, 127]}
-		self.cartToController.append(joint)
+def addController( address):
+	print "addController " + str(address)
+	controllers.append(address)
+	if(len(controllers) > len(cartToController) and len(carts) > len(cartToController)):
+		joint = {'cart':carts[len(carts)-1], 'controller':address, 'cachedSpeed':[127, 127]}
+		print "adding joint cart " + str(joint['cart']) + " " + str(joint['controller'])
+		cartToController.append(joint)
 
-def removePair(self, address):
+def removeController( address ):
+	print "remove controller "
+	controllers.remove(address)
+
+def removePair( address):
 	try:
-		for joint in self.cartToController:
-			if(joint['cart'] == handler or joint['cart'] == handler):
+		for joint in cartToController:
+			if(joint['cart'] == address or joint['cart'] == address):
 				cartToController.remove(joint)
 				return
 	except NameError:
 		print "no cartToController"
 
 
-def routeControlSignal(self, address, message):
-	for joint in self.cartToController:
-		if(joint['cart'] == address):
+def routeControlSignal( address, message):
+	for joint in cartToController:
+		if(joint['controller'] == address):
 			l,r = getSpeed(message)
 			joint['cachedSpeed'][0] = l
 			joint['cachedSpeed'][1] = r
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
 			return
 
-def getColor(self, address, message):
-	print "GET COLOR " + str(message)	
-	for joint in self.cartToController:
+def getColor( address, message):
+	print "color " + str(message)	
+	for joint in cartToController:
 		if(joint['cart'] == address):
 			try:
 				currentGameEvent = int(message)
@@ -66,57 +72,57 @@ def getColor(self, address, message):
 				return
 
 def getSpeed(message):
-	l = int(message.split(':')[1]) - 127
-	r = int(message.split(':')[2]) - 127
+	l = int(message.split(':')[1])
+	r = int(message.split(':')[2])
 	return l,r
 
 
-def gameUpdate(self):
+def gameUpdate():
 
-	if self.currentGameEvent == 1:
-		self.slowDown()
-	elif self.currentGameEvent == 2:
-		self.circle()
-	elif self.currentGameEvent == 3:
-		self.skewRight()
-	elif self.currentGameEvent == 4:
-		self.skewLeft()
+	if currentGameEvent == 1:
+		slowDown()
+	elif currentGameEvent == 2:
+		circle()
+	elif currentGameEvent == 3:
+		skewRight()
+	elif currentGameEvent == 4:
+		skewLeft()
 
 
-def slowDown(self):
-	for joint in self.cartToController:
-		if(joint['cart'].client_address != self.currentGameEventOwner):
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0]*0.5, joint['cachedSpeed'][1]*0.5), joint['cart'])
+def slowDown():
+	for joint in cartToController:
+		if(joint['cart'].client_address != currentGameEventOwner):
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*0.5, joint['cachedSpeed'][1]*0.5), joint['cart'])
 		else:
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
 
-def circle(self):
-	for joint in self.cartToController:
-		if(joint['cart'].client_address != self.currentGameEventOwner):
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0]*-1, joint['cachedSpeed'][1]*-1), joint['cart'])
+def circle():
+	for joint in cartToController:
+		if(joint['cart'].client_address != currentGameEventOwner):
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*-1, joint['cachedSpeed'][1]*-1), joint['cart'])
 		else:
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
 
-def skewRight(self):
-	for joint in self.cartToController:
-		if(joint['cart'].client_address != self.currentGameEventOwner):
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]*0.6), joint['cart'])
+def skewRight():
+	for joint in cartToController:
+		if(joint['cart'].client_address != currentGameEventOwner):
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]*0.6), joint['cart'])
 		else:
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
 
-def skewLeft(self):
-	for joint in self.cartToController:
-		if(joint['cart'].client_address != self.currentGameEventOwner):
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0]*0.6, joint['cachedSpeed'][1]), joint['cart'])
+def skewLeft():
+	for joint in cartToController:
+		if(joint['cart'].client_address != currentGameEventOwner):
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0]*0.6, joint['cachedSpeed'][1]), joint['cart'])
 		else:
-			UDPSock.sendto(self.stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
+			UDPSock.sendto(stringify(joint['cachedSpeed'][0], joint['cachedSpeed'][1]), joint['cart'])
 
 # don't think I need this for the feather
-def stringify(self, left, right):
+def stringify( left, right):
 	dataString = ""
 
-	modLeft = left + 127
-	modRight = right + 127
+	modLeft = left
+	modRight = right
 
 	if modLeft < 10:
 		dataString += "00" + str(modLeft)
@@ -137,20 +143,27 @@ def stringify(self, left, right):
 	return dataString
 
 def clearGameState():
-	self.currentGameEvent = -1
+	currentGameEvent = -1
 
 
 
 while True:
-	data,addr = UDPSock.recvfrom(1024)
-
-	if "register_cart" in data.strip():
+	data,addr = UDPSock.recvfrom(64)
+	#print data.strip()
+	dataStr = str(data.strip())
+	if "register_cart" in dataStr:
 		addCart(addr)
-	elif "register_controller" in data.strip():
+	elif "register_control" in dataStr:
 		addController(addr)
-	elif "color" in data.strip():
+	elif "color" in dataStr:
 		getColor(addr, data)
-	elif "speed" in data.strip():
+	elif "speed" in dataStr:
 		routeControlSignal(addr, data)
+	elif "disconnect_control" in dataStr:
+		removeController(addr)
+	elif "color" in dataStr:
+		print dataStr
+	elif "keep_alive" in dataStr:
+		print "keep alive"
 	else:
-		print "bad command"
+		print "bad command  " + dataStr
