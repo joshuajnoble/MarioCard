@@ -199,7 +199,7 @@ def keep_alive_cart(addr):
 			c.timestamp = time.time()
 	#prune the list
 	for c in carts:
-		if(time.time() - c.timestamp < 5):
+		if(time.time() - c.timestamp < 5.0):
 			remove_cart(c.addr)
 			remove_pair(c.addr)
 
@@ -209,7 +209,7 @@ def keep_alive_controller(addr):
 			c.timestamp = time.time()
 	#prune the list
 	for c in controllers:
-		if(time.time() - c.timestamp < 5):
+		if(time.time() - c.timestamp < 5.0):
 			remove_controller(c.addr)
 			remove_pair(c.addr)
 
@@ -248,7 +248,7 @@ def run_udp():
 		elif "color" in datastr:
 			print datastr
 		elif "keep_alive" in datastr:
-			keep_alive(addr)
+			keep_alive_cart(addr)
 		else:
 			print "bad command  " + datastr
 		thread_lock.release()
