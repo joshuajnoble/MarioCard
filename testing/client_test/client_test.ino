@@ -34,5 +34,9 @@ void loop() {
     udp.write(&lorem[0], 64);
     udp.endPacket();
   }
+
+  udp.beginPacket(cartServer, 3000);
+  udp.write("1", 1);
+  udp.endPacket();
   
 }

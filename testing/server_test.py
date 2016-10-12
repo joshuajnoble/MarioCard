@@ -23,13 +23,13 @@ import time
 # we want to bind on all possible IP addresses
 host = "0.0.0.0"
 
-#if you change the port, change it in the client program as well
+# if you change the port, change it in the client program as well
 port = 3000
 buffer = 102400
 
 # Create socket and bind to address
-UDPSock = socket(AF_INET,SOCK_DGRAM)
-UDPSock.bind((host,port))
+UDPSock = socket(AF_INET, SOCK_DGRAM)
+UDPSock.bind((host, port))
 
 time.time()
 print "\n"
@@ -47,30 +47,35 @@ totalbytes = 0
 # -1 is a deliberately invalid timestamp
 timestamp = -1
 
+start_timestamp = False
+
 # the total number of bursts that have come in
 totalrcvs = 0
 
 while 1:
-    data,addr = UDPSock.recvfrom(buffer)
-    
-    if not data:
-        print "No data."
-        break
-    else:
-        donestamp = time.time()
-        
-        data = len(data)
-        totalbytes += data
-        totalrcvs += 1
+	data, addr = UDPSock.recvfrom(buffer)
 
-        rate = totalbytes/(donestamp - timestamp) * 8 / 1000
-        print "\nRcvd: %s bytes, %s total in %s s at %s kbps" % (data, totalbytes, donestamp - timestamp, rate)
+	if not data:
+		print "No data."
+		break
+	else:
 
-        if data == 1:
-            # this is the reset, send one byte to trigger
-            totalbytes = 0
-            timestamp = time.time()
-            totalrcvs = 0
-            print "Reset recieved, clearing statistics."
+		if !start_timestamp:
+			start_timestamp = True
+			timestamp = time.time()
+
+		datalen = len(data)
+
+		if data == '1':
+			print "done"
+			print time.time() - timestamp
+			print totalbytes
+			print totalrcvs
+			print rate
+		else:
+			totalbytes += data
+			totalrcvs += 1
+
+			rate = totalbytes/(donestamp - timestamp) * 8 / 1000
 
 UDPSock.close()
