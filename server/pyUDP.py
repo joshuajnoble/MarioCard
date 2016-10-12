@@ -89,7 +89,7 @@ def remove_controller( address ):
 	[controllers.remove(c) for c in controllers if c.addr == address]
 
 def remove_cart( address ):
-	print "remove controller "
+	print "remove cart "
 	[carts.remove(c) for c in carts if c.addr == address]
 
 def remove_pair( address):
@@ -246,7 +246,7 @@ def run_game():
 def run_udp():
 	while True:
 		thread_lock.acquire()
-		data,addr = UDPSock.recvfrom(64)
+		data,addr = UDPSock.recvfrom(32)
 		#print data.strip()
 		datastr = str(data.strip())
 		if "register_cart" in datastr:

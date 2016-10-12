@@ -57,6 +57,8 @@ class ofApp : public ofxiOSApp {
     bool mouseDown;
     
     SimpleSprite disconnectSprite, reconnectSprite, spinSprite;
+    
+    float keepAliveTimer;
 };
 
 

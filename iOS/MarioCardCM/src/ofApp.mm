@@ -82,6 +82,7 @@ void ofApp::setup(){
     coreMotion.resetAttitude();
     
     mouseDown = false;
+    keepAliveTimer = ofGetElapsedTimef();
 }
 
 //--------------------------------------------------------------
@@ -95,8 +96,11 @@ void ofApp::update()
     
     coreMotion.update();
     
-    left = ofMap(coreMotion.getPitch(), -1.4, 1.4, -127, 127);
-    right = ofMap(coreMotion.getPitch(), -1.4, 1.4, 127, -127);
+    float pitch = coreMotion.getPitch();
+    pitch = ofClamp(pitch, -1.4, 1.4);
+    
+    left = ofMap(pitch, -1.4, 1.4, -127, 127);
+    right = ofMap(pitch, -1.4, 1.4, 127, -127);
     
     // figure out speed and direction from L/R tread
     //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
@@ -114,20 +118,22 @@ void ofApp::update()
             int leftTread = 90 * speed;
             int rightTread = 90 * speed;
             
+            const int steerValue = 40;
+            
             if(speed > 0.0)
             {
             
                 // all the way to the left will be -254, so slow left tread to we steer to left
-                leftTread -= ofMap(trueSteer, -254, 254, -30, 30);
+                leftTread -= ofMap(trueSteer, -254, 254, -steerValue, steerValue);
                 // all the way to the right will be 254, so slow right tread to we steer to right
-                rightTread -= ofMap(trueSteer, -254, 254, 30, -30);
+                rightTread -= ofMap(trueSteer, -254, 254, steerValue, -steerValue);
             }
             else
             {
                 // all the way to the left will be -254, so slow left tread to we steer to left
-                leftTread += ofMap(trueSteer, -254, 254, -30, 30);
+                leftTread += ofMap(trueSteer, -254, 254, -steerValue, steerValue);
                 // all the way to the right will be 254, so slow right tread to we steer to right
-                rightTread += ofMap(trueSteer, -254, 254, 30, -30);
+                rightTread += ofMap(trueSteer, -254, 254, steerValue, -steerValue);
             }
             
             // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
@@ -137,6 +143,14 @@ void ofApp::update()
             udpMessage = message.str();
             client.Send(message.str().c_str(), message.str().size());
         }
+        
+        if(ofGetElapsedTimef() - keepAliveTimer > 4.0)
+        {
+            string keepAlive = "keep_alive_control";
+            client.Send(keepAlive.c_str(), keepAlive.size());
+            keepAliveTimer = ofGetElapsedTimef();
+        }
+        
     }
     
     // make a brand new arc using our steer
