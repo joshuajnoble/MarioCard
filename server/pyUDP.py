@@ -86,10 +86,12 @@ def add_controller( address):
 
 def remove_controller( address ):
 	print "remove controller "
+	[cart_to_controller.remove(j) for j in cart_to_controller if j['controller'].addr == address]
 	[controllers.remove(c) for c in controllers if c.addr == address]
 
 def remove_cart( address ):
-	print "remove controller "
+	print "remove cart "
+	[cart_to_controller.remove(j) for j in cart_to_controller if j['cart'].addr == address]
 	[carts.remove(c) for c in carts if c.addr == address]
 
 def remove_pair( address):
@@ -213,7 +215,7 @@ def keep_alive_cart(addr):
 			c.timestamp = time.time()
 	#prune the list
 	for c in carts:
-		if(time.time() - c.timestamp < 5.0):
+		if(time.time() - c.timestamp > 5.0):
 			remove_cart(c.addr)
 			remove_pair(c.addr)
 
@@ -223,7 +225,7 @@ def keep_alive_controller(addr):
 			c.timestamp = time.time()
 	#prune the list
 	for c in controllers:
-		if(time.time() - c.timestamp < 5.0):
+		if(time.time() - c.timestamp > 5.0):
 			remove_controller(c.addr)
 			remove_pair(c.addr)
 
@@ -239,8 +241,8 @@ def run_game():
 	while True:
 		thread_lock.acquire()
 		game_update()
-		time.sleep(0.1)
 		thread_lock.release()
+		time.sleep(0.1)
 
 #now run the UDP thread
 def run_udp():
@@ -263,6 +265,8 @@ def run_udp():
 			print datastr
 		elif "keep_alive" in datastr:
 			keep_alive_cart(addr)
+		elif "keep_alive_control" in datastr:
+			keep_alive_control(addr)
 		else:
 			print "bad command  " + datastr
 		thread_lock.release()
