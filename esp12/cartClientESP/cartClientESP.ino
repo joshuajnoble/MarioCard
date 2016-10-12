@@ -49,8 +49,9 @@ void loop() {
 
     char c = Serial.read(); // only ever 1 char
     udp.beginPacket(cartServer, 3000);
-    udp.write("color:");
-    udp.write(c);
+    char color[7] = "color:";
+    color[6] = c;
+    udp.write(&color[0]);
     udp.endPacket();
   }
 
@@ -74,24 +75,3 @@ void loop() {
     keepAlive = millis();
   }
 }
-
-//char *getValidChars(char *str)
-//{
-//  char *end;
-//
-//  // Trim leading space
-//  while( !isalnum(*str) && (*str != ':' ) str++;
-//
-//  if(*str == 0)  // All spaces?
-//    return str;
-//
-//  // Trim trailing space
-//  end = str + strlen(str) - 1;
-//  while(end > str && (!isalnum(*end) && (*end != ':')) end--;
-//
-//  // Write new null terminator
-//  *(end+1) = 0;
-//
-//  return str;
-//}
-

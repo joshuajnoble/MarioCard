@@ -248,7 +248,7 @@ def run_game():
 def run_udp():
 	while True:
 		thread_lock.acquire()
-		data,addr = UDPSock.recvfrom(64)
+		data,addr = UDPSock.recvfrom(32)
 		#print data.strip()
 		datastr = str(data.strip())
 		if "register_cart" in datastr:
