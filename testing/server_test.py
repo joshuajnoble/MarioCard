@@ -60,7 +60,8 @@ while 1:
 		break
 	else:
 
-		if !start_timestamp:
+		if start_timestamp == False:
+			print "started"
 			start_timestamp = True
 			timestamp = time.time()
 
