@@ -25,7 +25,7 @@ host = "0.0.0.0"
 
 # if you change the port, change it in the client program as well
 port = 3000
-buffer = 102400
+buffer = 64
 
 # Create socket and bind to address
 UDPSock = socket(AF_INET, SOCK_DGRAM)
@@ -48,35 +48,37 @@ totalbytes = 0
 timestamp = -1
 
 start_timestamp = False
-
+donestamp = 0
 # the total number of bursts that have come in
 totalrcvs = 0
+totaldatalen = 0
 
 while 1:
 	data, addr = UDPSock.recvfrom(buffer)
 
-	if not data:
-		print "No data."
-		break
+	datalen = len(data)
+
+	if data == '2':
+		print "done"
+		print "total time in secs " + str(time.time() - timestamp)
+		print "total bytes " + str(totalbytes)
+		print "number of receives " + str(totalrcvs)
+		print "data rate in kb " + str(rate)
+		print "avg recv size " + str(totaldatalen/totalrcvs)
+	elif data == '1':
+		print "started "
+		totalbytes = 0
+		totalrcvs = 0
+		timestamp = time.time()
+		rate = 0
+		totaldatalen = 0	
 	else:
+		totalbytes += datalen
+		totalrcvs += 1
+		#print totalrcvs
+		donestamp = time.time()
+		totaldatalen += datalen
 
-		if start_timestamp == False:
-			print "started"
-			start_timestamp = True
-			timestamp = time.time()
-
-		datalen = len(data)
-
-		if data == '1':
-			print "done"
-			print time.time() - timestamp
-			print totalbytes
-			print totalrcvs
-			print rate
-		else:
-			totalbytes += data
-			totalrcvs += 1
-
-			rate = totalbytes/(donestamp - timestamp) * 8 / 1000
+		rate = totalbytes/(donestamp - timestamp) * 8 / 1000
 
 UDPSock.close()
