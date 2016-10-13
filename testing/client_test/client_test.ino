@@ -21,22 +21,42 @@ void setup() {
     Serial.println("registering");
     delay(500);
   }
-  udp.begin(3000);
+  
 }
 
 void loop() {
 
-
-  // put your main code here, to run repeatedly:
-  for( int i = 0; i < 128; i++)
+  if(Serial.available())
   {
-    udp.beginPacket(cartServer, 3000);
-    udp.write(&lorem[0], 64);
-    udp.endPacket();
-  }
 
-  udp.beginPacket(cartServer, 3000);
-  udp.write("1", 1);
-  udp.endPacket();
+    udp.begin(3000);
+  
+    Serial.println(" start ");
+
+    udp.beginPacket(cartServer, 3000);
+    udp.write('1');
+    udp.endPacket();
+  
+    // put your main code here, to run repeatedly:
+    for( int i = 0; i < 8192; i++)
+    {
+      udp.beginPacket(cartServer, 3000);
+      udp.write(&lorem[0], 64);
+      udp.endPacket();
+      delay(5);
+    }
+  
+    udp.beginPacket(cartServer, 3000);
+    udp.write('2');
+    udp.endPacket();
+  
+    Serial.println(" done ");
+  
+    udp.stop();
+
+    while(Serial.available()) {
+      Serial.read();
+    }
+  }
   
 }

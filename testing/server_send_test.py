@@ -47,31 +47,20 @@ start_timestamp = False
 # the total number of bursts that have come in
 totalrcvs = 0
 
+address = ""
+
 while 1:
-	data, addr = UDPSock.recvfrom(buffer)
+    data, addr = UDPSock.recvfrom(buffer)
 
-	if not data:
-		print "No data."
-		break
-	else:
+    address = addr
 
-		if start_timestamp == False:
-			print "started"
-			start_timestamp = True
-			timestamp = time.time()
+    data = "X" * 16
 
-		datalen = len(data)
-
-		if data == '1':
-			print "done"
-			print time.time() - timestamp
-			print totalbytes
-			print totalrcvs
-			print rate
-		else:
-			totalbytes += data
-			totalrcvs += 1
-
-			rate = totalbytes/(donestamp - timestamp) * 8 / 1000
+    for x in 2048:
+		UDPSock.sendto(data,addr)					
+		# a pause via time.sleep()
+		# not sure that this is needed.  Put it here to play with maybe not-overloading the
+		# windows tcp/ip stack, but not sure if it actually has any noticable effect.
+		time.sleep(0.001)
 
 UDPSock.close()
