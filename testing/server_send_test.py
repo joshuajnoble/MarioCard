@@ -50,17 +50,17 @@ totalrcvs = 0
 address = ""
 
 while 1:
-    data, addr = UDPSock.recvfrom(buffer)
 
-    address = addr
+	data, addr = UDPSock.recvfrom(buffer)
+	address = addr
+	if data:
+		senddata = "X" * 16
 
-    data = "X" * 16
-
-    for x in 2048:
-		UDPSock.sendto(data,addr)					
-		# a pause via time.sleep()
-		# not sure that this is needed.  Put it here to play with maybe not-overloading the
-		# windows tcp/ip stack, but not sure if it actually has any noticable effect.
-		time.sleep(0.001)
+		for x in 2048:
+			UDPSock.sendto(senddata,addr)					
+			# a pause via time.sleep()
+			# not sure that this is needed.  Put it here to play with maybe not-overloading the
+			# windows tcp/ip stack, but not sure if it actually has any noticable effect.
+			time.sleep(0.001)
 
 UDPSock.close()
