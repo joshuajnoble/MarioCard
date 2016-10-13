@@ -25,7 +25,7 @@ host = "0.0.0.0"
 
 # if you change the port, change it in the client program as well
 port = 3000
-buffer = 64
+buffer = 102400
 
 # Create socket and bind to address
 UDPSock = socket(AF_INET, SOCK_DGRAM)
@@ -43,37 +43,24 @@ totalbytes = 0
 timestamp = -1
 
 start_timestamp = False
-donestamp = 0
+
 # the total number of bursts that have come in
 totalrcvs = 0
-totaldatalen = 0
+
+address = ""
 
 while 1:
+
 	data, addr = UDPSock.recvfrom(buffer)
+	address = addr
+	if data:
+		senddata = "X" * 16
 
-	datalen = len(data)
-
-	if data == '2':
-		print "done"
-		print "total time in secs " + str(time.time() - timestamp)
-		print "total bytes " + str(totalbytes)
-		print "number of receives " + str(totalrcvs)
-		print "data rate in kb " + str(rate)
-		print "avg recv size " + str(totaldatalen/totalrcvs)
-	elif data == '1':
-		print "started "
-		totalbytes = 0
-		totalrcvs = 0
-		timestamp = time.time()
-		rate = 0
-		totaldatalen = 0	
-	else:
-		totalbytes += datalen
-		totalrcvs += 1
-		#print totalrcvs
-		donestamp = time.time()
-		totaldatalen += datalen
-
-		rate = totalbytes/(donestamp - timestamp) * 8 / 1000
+		for x in 2048:
+			UDPSock.sendto(senddata,addr)					
+			# a pause via time.sleep()
+			# not sure that this is needed.  Put it here to play with maybe not-overloading the
+			# windows tcp/ip stack, but not sure if it actually has any noticable effect.
+			time.sleep(0.001)
 
 UDPSock.close()
