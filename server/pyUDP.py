@@ -23,8 +23,16 @@ allow_reuse_address = True
 currentGameEvent = -1
 currentGameEventOwner = ""
 
+SKEW_RIGHT_EVENT = 1
+SKEW_LEFT_EVENT = 2
+CIRCLE_EVENT = 3
+SLOW_DOWN_EVENT = 4
+SPEED_UP_EVENT = 5
+FLIP_CONTROLS_EVENT = 5
+
+
 ##############################################################################
-class cart:
+class Cart:
 
 	addr = ""
 	timestamp = 0
@@ -43,7 +51,7 @@ class cart:
 
 
 ##############################################################################
-class controller:
+class Controller:
 	addr = ""
 	timestamp = 0
 
@@ -58,6 +66,25 @@ class controller:
 		self.addr = address
 		self.timestamp = timestamp
 ##############################################################################
+
+class Game_Event:
+	eventType = ""
+	owner = ""
+	timestamp = 0
+
+	def __getitem__(self, key):
+		# if key is of invalid type or value, the list values will raise the error
+		return self.values[key]
+
+	def __setitem__(self, key, value):
+		self.values[key] = value
+
+	def __init__(self, address, timestamp):
+		self.addr = address
+		self.timestamp = timestamp
+
+
+events = []
 
 
 #initializations
@@ -69,7 +96,7 @@ def add_cart( address):
 	carts.append(c)
 	# are there more controllers and carts than joints?
 	if(len(carts) > len(cart_to_controller) and len(controllers) > len(cart_to_controller)):
-		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127]}
+		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
 
@@ -80,7 +107,7 @@ def add_controller( address):
 	controllers.append(cont)
 	# are there more controllers and carts than joints?
 	if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-		joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127]}
+		joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
 
@@ -117,9 +144,9 @@ def get_color( address, message):
 	for joint in cart_to_controller:
 		if(joint['cart'] == address):
 			try:
-				currentGameEvent = int(message)
-				currentGameEventOwner = address
-				t = Timer(3.0, clearGameState)
+				e = Game_Event(message)
+				e.owner = address
+				e.timestamp = Time.time()
 			except ValueError:
 				print "Value error parsing color"
 				return
@@ -133,49 +160,67 @@ def get_speed(message):
 
 def game_update():
 
-	if currentGameEvent == 1:
-		slow_down()
-	elif currentGameEvent == 2:
-		circle()
-	elif currentGameEvent == 3:
-		skew_right()
-	elif currentGameEvent == 4:
-		skew_left()
-	else:
-		run_unmodified()
+	for joint in cart_to_controller:
+		joint['mod_speed'][0] = joint['speed'][0]
+		joint['mod_speed'][1] = joint['speed'][1]
+
+	for event in events:
+		if event.eventType == FLIP_CONTROLS_EVENT:
+			flip_controls(event)
+		if event.eventType == SPEED_UP_EVENT:
+			speed_up(event)
+		if event.eventType == SKEW_RIGHT_EVENT:
+			skew_right(event)
+		if event.eventType == SKEW_LEFT_EVENT:
+			skew_left(event)
+		if event.eventType == CIRCLE_EVENT:
+			circle(event)
+		if event.eventType == SLOW_DOWN_EVENT:
+			slow_down(event)
+
+	events[:] = [event for event in events if Time.time() - event.timestamp < 5.0]
+
+	for joint in cart_to_controller:
+		UDPSock.sendto(stringify(joint['mod_speed'][0], joint['mod_speed'][1]), joint['cart'].addr)
 
 # game run functions
-def run_unmodified():
-	for joint in cart_to_controller:
-		UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
 
-def slow_down():
+def speed_up(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['speed'][0]*0.5, joint['speed'][1]*0.5), joint['cart'].addr)
-		else:
-			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
+		if(joint['cart'].client_address == event.owner):
+			joint['mod_speed'][0] = joint['mod_speed'][0]*1.5
+			joint['mod_speed'][1] = joint['mod_speed'][1]*1.5
+
+def slow_down(event):
+	for joint in cart_to_controller:
+		if(joint['cart'].client_address != event.owner):
+			joint['mod_speed'][0] = joint['mod_speed'][0]*0.5
+			joint['mod_speed'][1] = joint['mod_speed'][1]*0.5
 
 def circle():
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['speed'][0]*-1, joint['speed'][1]*-1), joint['cart'].addr)
-		else:
-			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
+		if(joint['cart'].client_address != event.owner):
+			joint['mod_speed'][0] = 255
+			joint['mod_speed'][1] = 0
 
 def skew_right():
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]*0.6), joint['cart'].addr)
-		else:
-			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
+		if(joint['cart'].client_address != event.owner):
+			joint['mod_speed'][0] = joint['mod_speed'][0]*0.6
+			joint['mod_speed'][1] = joint['mod_speed'][1]
 
 def skew_left():
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != currentGameEventOwner):
-			UDPSock.sendto(stringify(joint['speed'][0]*0.6, joint['speed'][1]), joint['cart'].addr)
-		else:
-			UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'].addr)
+		if(joint['cart'].client_address != event.owner):
+			joint['mod_speed'][0] = joint['mod_speed'][0]
+			joint['mod_speed'][1] = joint['mod_speed'][1]*0.6
+
+
+def flip_controls():
+	for joint in cart_to_controller:
+		if(joint['cart'].client_address != event.owner):
+			joint['mod_speed'][0] = joint['mod_speed'][1]
+			joint['mod_speed'][1] = joint['mod_speed'][0]
 
 # pad strings nicely
 def stringify( left, right):
@@ -201,10 +246,6 @@ def stringify( left, right):
 		datastring += str(modRight)
 
 	return datastring
-
-def clearGameState():
-	currentGameEvent = -1
-
 
 
 def keep_alive_cart(addr):
