@@ -274,10 +274,11 @@ def keep_alive_controller(addr):
 ##############################################################################
 # make a lock
 thread_lock = Lock()
+run_event = threading.Event()
 
 #functions to be called in threads
 def run_game():
-	while True:
+	while run_event.is_set():
 		thread_lock.acquire()
 		game_update()
 		time.sleep(0.1)
@@ -285,7 +286,7 @@ def run_game():
 
 #now run the UDP thread
 def run_udp():
-	while True:
+	while run_event.is_set():
 		thread_lock.acquire()
 		data,addr = UDPSock.recvfrom(32)
 		#print data.strip()
@@ -315,5 +316,13 @@ udp_thread = Thread(target = run_udp)
 game_thread.start()
 udp_thread.start()
 
-
+try:
+	while 1:
+		time.sleep(.1)
+except KeyboardInterrupt:
+	run_event.clear()
+	UDPSock.close()
+	game_thread.join()
+	udp_thread.join()
+	print "threads successfully closed"
 
