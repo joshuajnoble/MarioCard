@@ -140,16 +140,22 @@ def route_control_signal( address, message):
 			return
 
 def get_color( address, message):
-	print "color " + str(message)	
-	for joint in cart_to_controller:
-		if(joint['cart'] == address):
-			try:
-				e = Game_Event(message)
-				e.owner = address
-				e.timestamp = Time.time()
-			except ValueError:
-				print "Value error parsing color"
-				return
+	print "color " + str(message)
+	eventColor = message.split(':')[1]
+
+	exists = False
+
+	# do we already have this color?
+	for event in events
+		if event.address == address and event.eventType == message
+			exists = True
+
+	if exists == False:
+		e = Game_Event()
+		e.eventType = eventColor
+		e.owner = address
+		e.timestamp = Time.time()
+		events.append(e)
 
 def get_speed(message):
 	l = int(message.split(':')[1])
