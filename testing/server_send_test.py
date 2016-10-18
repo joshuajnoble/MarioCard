@@ -25,7 +25,7 @@ host = "0.0.0.0"
 
 # if you change the port, change it in the client program as well
 port = 3000
-buffer = 102400
+buffer = 64
 
 # Create socket and bind to address
 UDPSock = socket(AF_INET, SOCK_DGRAM)
@@ -53,14 +53,18 @@ while 1:
 
 	data, addr = UDPSock.recvfrom(buffer)
 	address = addr
-	if data:
+	if data == '1':
+		print "starting"
 		senddata = "X" * 16
 
-		for x in 2048:
+		for x in range(8192):
 			UDPSock.sendto(senddata,addr)					
 			# a pause via time.sleep()
 			# not sure that this is needed.  Put it here to play with maybe not-overloading the
 			# windows tcp/ip stack, but not sure if it actually has any noticable effect.
-			time.sleep(0.001)
+			time.sleep(0.01)
+
+		print "done"
+		UDPSock.sendto("ok", addr)
 
 UDPSock.close()
