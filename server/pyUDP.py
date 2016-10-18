@@ -31,6 +31,8 @@ SLOW_DOWN_EVENT = 'r'
 SPEED_UP_EVENT = 'b'
 FLIP_CONTROLS_EVENT = 'y'
 
+possible_events = [SKEW_RIGHT_EVENT, SKEW_LEFT_EVENT, CIRCLE_EVENT, SLOW_DOWN_EVENT, SPEED_UP_EVENT, FLIP_CONTROLS_EVENT]
+
 
 ##############################################################################
 class Cart:
@@ -158,6 +160,9 @@ def route_control_signal( address, message):
 def get_color( address, message):
 	print "color " + str(message)
 	eventColor = message.split(':')[1][0]
+	if not eventColor in possible_events:
+		print "bad event"
+		return
 
 	 	
 
