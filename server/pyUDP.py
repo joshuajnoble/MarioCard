@@ -6,7 +6,7 @@
 import socket
 import time
 import threading
-from threading import Lock
+from threading import RLock
 from threading import Thread
 
 
@@ -294,7 +294,7 @@ def keep_alive_controller(addr):
 
 ##############################################################################
 # make a lock
-thread_lock = Lock()
+thread_lock = RLock()
 run_event = threading.Event()
 
 #functions to be called in threads

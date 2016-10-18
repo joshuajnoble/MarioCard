@@ -18,17 +18,29 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
+  //ESP.eraseConfig();
+  //WiFi.setAutoConnect(false);
+  //WiFi.disconnect(true);
+
   // put your setup code here, to run once:
   WiFi.begin(ssid);
 
   while (WiFi.status() != WL_CONNECTED) {
     Serial.println("registering");
-    delay(500);
+    delay(800);
   }
   udp.begin(3000);
 
   // now register the cart with the server
   char registerCart[] = "register_cart";
+  udp.beginPacket(cartServer, 3000);
+  udp.write(&registerCart[0], 13);
+  udp.endPacket();
+
+  udp.beginPacket(cartServer, 3000);
+  udp.write(&registerCart[0], 13);
+  udp.endPacket();
+
   udp.beginPacket(cartServer, 3000);
   udp.write(&registerCart[0], 13);
   udp.endPacket();
