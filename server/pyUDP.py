@@ -32,7 +32,7 @@ SPEED_UP_EVENT = 'b'
 FLIP_CONTROLS_EVENT = 'y'
 
 possible_events = [SKEW_RIGHT_EVENT, SKEW_LEFT_EVENT, CIRCLE_EVENT, SLOW_DOWN_EVENT, SPEED_UP_EVENT, FLIP_CONTROLS_EVENT]
-
+events = []
 
 ##############################################################################
 class Cart:
@@ -86,9 +86,6 @@ class Game_Event:
 		self.owner = _owner
 		self.timestamp = _timestamp
 		self.eventType = _eventType
-
-
-events = []
 
 
 #initializations
@@ -170,7 +167,7 @@ def get_color( address, message):
 
 	# do we already have this color?
 	for event in events:
-		if event.owner == address and event.eventType == message:
+		if event.owner == address and event.eventType == eventColor:
 			print "event already exists, ignoring"
 			exists = True
 	
@@ -191,8 +188,9 @@ def game_update():
 	for joint in cart_to_controller:
 		joint['mod_speed'][0] = joint['speed'][0]
 		joint['mod_speed'][1] = joint['speed'][1]
-
+	
 	for event in events:
+		print " event " + event.eventType
 		if event.eventType == FLIP_CONTROLS_EVENT:
 			flip_controls(event)
 		if event.eventType == SPEED_UP_EVENT:
@@ -207,6 +205,7 @@ def game_update():
 		if event.eventType == SLOW_DOWN_EVENT:
 			slow_down(event)
 
+	global events
 	events[:] = [event for event in events if time.time() - event.timestamp < 5.0]
 
 	for joint in cart_to_controller:
