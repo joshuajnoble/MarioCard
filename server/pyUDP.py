@@ -159,6 +159,8 @@ def get_color( address, message):
 	print "color " + str(message)
 	eventColor = message.split(':')[1][0]
 
+	 	
+
 	exists = False
 
 	# do we already have this color?
@@ -300,17 +302,17 @@ run_event = threading.Event()
 #functions to be called in threads
 def run_game():
 	while run_event.is_set():
-		print "g + " + str( time.time())
+		#print "g + " + str( time.time())
 		thread_lock.acquire()
 		game_update()
 		thread_lock.release()
-		print "g - " + str(time.time())
+		#print "g - " + str(time.time())
 		time.sleep(0.1)
 
 #now run the UDP thread
 def run_udp():
 	while run_event.is_set():
-		print "u + " + str(time.time())
+		#print "u + " + str(time.time())
 		thread_lock.acquire()
 		try:
 			data,addr = UDPSock.recvfrom(32)
@@ -337,7 +339,7 @@ def run_udp():
 		except socket.timeout:
 			thread_lock.release()
 		
-		print "u - " + str(time.time())
+		#print "u - " + str(time.time())
 		time.sleep(0.01)
 
 run_event.set()
