@@ -110,18 +110,20 @@ void loop()
   rgb inColor = { (int) r, (int) g, (int) b };
   hsv outColor = rgb2hsv(inColor);
 
-  //if ( clear > 100 && clear < 900 && outColor.s > 0.25)
-  if ( outColor.s > 0.25)
+  if ( clear > 100 && clear < 900 && outColor.s > 0.25)
+//  if ( outColor.s > 0.25)
   {
     for ( int i = 0; i < 5; i++)
     {
       if (fabs(hues[i] - outColor.h) < 20.0)
       {
-        if(lastFoundColor != colorNames[i]) 
-        {
+//        if(lastFoundColor != colorNames[i]) 
+//        {
           Serial1.println(colorNames[i]);
-        }
-        lastFoundColor = colorNames[i];
+          // wait just a second to get the serial clear
+          delay(50);
+//        }
+//        lastFoundColor = colorNames[i];
       }
     }
   }
@@ -170,7 +172,7 @@ hsv rgb2hsv(rgb in)
     max = in.r > in.g ? in.r : in.g;
     max = max  > in.b ? max  : in.b;
 
-    out.v = max;                                // v
+    out.v = max;
     delta = max - min;
     if (delta < 0.00001)
     {
@@ -178,13 +180,12 @@ hsv rgb2hsv(rgb in)
         out.h = 0; // undefined, maybe nan?
         return out;
     }
-    if( max > 0.0 ) { // NOTE: if Max is == 0, this divide would cause a crash
+    if( max > 0.0 ) {
         out.s = (delta / max);                  // s
     } else {
-        // if max is 0, then r = g = b = 0              
-            // s = 0, v is undefined
+        // if max is 0, then r = g = b = 0 s = 0, v is undefined
         out.s = 0.0;
-        out.h = NAN;                            // its now undefined
+        out.h = NAN;
         return out;
     }
     if( in.r >= max ) {                         

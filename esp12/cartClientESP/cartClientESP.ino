@@ -36,7 +36,6 @@ void setup() {
   delay(1000);
   
   hasSetUpCart = true;
-
   keepAlive = millis();
 }
 
@@ -46,7 +45,6 @@ void loop() {
   // put your main code here, to run repeatedly:
   if (Serial.available() > 0)
   {
-
     char c = Serial.read(); // only ever 1 char
     udp.beginPacket(cartServer, 3000);
     char color[7] = "color:";
@@ -60,7 +58,8 @@ void loop() {
   {
     // read the packet into the buffer
     int result = udp.read(commandBuffer, 7);
-    if (result != -1) {
+    if (result != -1)
+    {
       Serial.print(commandBuffer);
     }
   }
