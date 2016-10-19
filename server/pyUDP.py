@@ -185,10 +185,13 @@ def get_speed(message):
 
 def game_update():
 
+	#print "game update"
+	global events
+
 	for joint in cart_to_controller:
 		joint['mod_speed'][0] = joint['speed'][0]
 		joint['mod_speed'][1] = joint['speed'][1]
-	
+
 	for event in events:
 		print " event " + event.eventType
 		if event.eventType == FLIP_CONTROLS_EVENT:
@@ -205,7 +208,6 @@ def game_update():
 		if event.eventType == SLOW_DOWN_EVENT:
 			slow_down(event)
 
-	global events
 	events[:] = [event for event in events if time.time() - event.timestamp < 5.0]
 
 	for joint in cart_to_controller:
@@ -339,7 +341,8 @@ def run_udp():
 				keep_alive_control(addr)
 			else:
 				print "bad command  " + datastr
-				thread_lock.release()
+
+			thread_lock.release()
 		except socket.timeout:
 			thread_lock.release()
 		
