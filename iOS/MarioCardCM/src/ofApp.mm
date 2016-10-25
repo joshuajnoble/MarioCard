@@ -28,14 +28,25 @@ void ofApp::setup(){
     
     connected = false;
     
+    string regStr = "register_control";
+    
+#ifdef UDP
+    
     // make a udp connection that we can stream data to
     client.Create();
     client.Connect("192.168.42.1",3000);
     client.SetNonBlocking(true);
     
     // now register
-    string regStr = "register_control";
     client.Send(regStr.c_str(), regStr.size());
+    
+#else
+    
+    client.setup("192.168.42.1",3000);
+    client.send(regStr);
+    client.receiveRawBytes(&serverId, 1 );
+    
+#endif
     
     isConnected = true;
     
@@ -138,18 +149,23 @@ void ofApp::update()
             
             // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
             stringstream message;
-            message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
+            message << "speed:" << serverId << ":" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
             //cout << message.str() << endl;
             udpMessage = message.str();
+            
+#ifdef UDP
             client.Send(message.str().c_str(), message.str().size());
+#else
+            client.send(message.str());
+#endif
         }
         
-        if(ofGetElapsedTimef() - keepAliveTimer > 4.0)
-        {
-            string keepAlive = "keep_alive_control";
-            client.Send(keepAlive.c_str(), keepAlive.size());
-            keepAliveTimer = ofGetElapsedTimef();
-        }
+//        if(ofGetElapsedTimef() - keepAliveTimer > 4.0)
+//        {
+//            string keepAlive = "keep_alive_control";
+//            client.Send(keepAlive.c_str(), keepAlive.size());
+//            keepAliveTimer = ofGetElapsedTimef();
+//        }
         
     }
     
@@ -304,7 +320,19 @@ void ofApp::touchDown(ofTouchEventArgs & touch){
 //--------------------------------------------------------------
 void ofApp::touchMoved(ofTouchEventArgs & touch){
     // used to be 0.03 to -0.03
-    speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+    if( disconnectSprite.hitTest(touch))
+    {
+        //disconnect();
+    }
+    else if( reconnectSprite.hitTest(touch))
+    {
+        //reconnect();
+    }
+    else
+    {
+
+        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+    }
 }
 
 //--------------------------------------------------------------
@@ -328,7 +356,12 @@ void ofApp::spin()
     if(isConnected)
     {
         string spinStr = "spin_control";
+        
+#ifdef UDP
         client.Send(spinStr.c_str(), spinStr.size());
+#else
+        client.send(spinStr);
+#endif
     }
 }
 
@@ -339,14 +372,22 @@ void ofApp::disconnect()
     {
         isConnected = false;
         string disconnectStr = "disconnect_control";
+        
+#ifdef UDP
         client.Send(disconnectStr.c_str(), disconnectStr.size());
         client.Close();
+        
+#else
+        client.send(disconnectStr);
+        client.close();
+#endif
     }
 }
 
 void ofApp::reconnect()
 {
     cout << " reconnect " << endl;
+#ifdef UDP
     client.Create();
     client.Connect("192.168.42.1",3000);
     client.SetNonBlocking(true);
@@ -354,6 +395,17 @@ void ofApp::reconnect()
     // now register
     string regStr = "register_control";
     client.Send("register_control", regStr.size());
+    
+#else
+    
+    client.setup("192.168.42.1",3000);
+    
+    // now register
+    string regStr = "register_control";
+    client.send("register_control");
+    client.receiveRawBytes(&serverId, 1 );
+    
+#endif
     
     isConnected = true;
 }

@@ -9,25 +9,25 @@
 /* Begin PBXBuildFile section */
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
-		22958A50C20095A9681E3701 /* ofxCoreMotion.mm in Sources */ = {isa = PBXBuildFile; fileRef = C122590558469B7390A2E539 /* ofxCoreMotion.mm */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
-		42F9C7CBCEEC887FB0B419FC /* ofxUDPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C5693ED4F0D728C6F1813FBB /* ofxUDPManager.cpp */; };
-		4CD852924FC8F9B5AC8DF34C /* ofxTCPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D0C1521C489F3C1A3161498A /* ofxTCPManager.cpp */; };
+		3C9C6CAE68718DCC5CF0F6E2 /* ofxTCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCE65232CF239F04F3B57EF3 /* ofxTCPServer.cpp */; };
+		3D06CEEB15F71D90A39572BE /* ofxTCPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 44A43FD4FABD226415043977 /* ofxTCPManager.cpp */; };
 		5326AEA810A23A0500278DE6 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5326AEA710A23A0500278DE6 /* CoreLocation.framework */; };
 		53F323EB10A20EDB00E0DAE4 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53F323EA10A20EDB00E0DAE4 /* OpenAL.framework */; };
+		66BEACDFEDCA2990738B3BAD /* ofxCoreMotion.mm in Sources */ = {isa = PBXBuildFile; fileRef = E2B8E942D991859F004AE5BF /* ofxCoreMotion.mm */; };
 		678E130817951530005B6D19 /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 678E130717951530005B6D19 /* Icon@2x.png */; };
 		678E130A17951536005B6D19 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 678E130917951536005B6D19 /* Icon.png */; };
 		678E130C1795153C005B6D19 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 678E130B1795153C005B6D19 /* Default.png */; };
 		678E130E17951540005B6D19 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 678E130D17951540005B6D19 /* Default@2x.png */; };
 		678E131017951549005B6D19 /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = 678E130F17951549005B6D19 /* Default-568h@2x~iphone.png */; };
 		67DFA53619F92A69003B3434 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 67DFA53419F92A5E003B3434 /* Accelerate.framework */; };
-		886016D37D80D288135B4C20 /* ofxTCPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B560327B8C4DAAF65E89BD37 /* ofxTCPClient.cpp */; };
-		A823DB0F1D88C0320023095F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A823DB0E1D88C0320023095F /* CoreMotion.framework */; };
-		A861A4941DA5B481007C45C3 /* SimpleSprite.mm in Sources */ = {isa = PBXBuildFile; fileRef = A861A4931DA5B481007C45C3 /* SimpleSprite.mm */; };
-		AF0FCA14C2D675E87832E0D1 /* ofxTCPServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2DE43F78FD701A45AEEEFF63 /* ofxTCPServer.cpp */; };
+		810D5EE0AE3AF200E459DF3E /* ofxTCPClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B6F3D50C71146AF1D05CE /* ofxTCPClient.cpp */; };
+		A88311D41DBF27EF00D830A2 /* SimpleSprite.mm in Sources */ = {isa = PBXBuildFile; fileRef = A88311D31DBF27EF00D830A2 /* SimpleSprite.mm */; };
+		A88311D61DBF294500D830A2 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A88311D51DBF294500D830A2 /* CoreMotion.framework */; };
 		BB16EBD20F2B2A9500518274 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD10F2B2A9500518274 /* OpenGLES.framework */; };
 		BB16EBD90F2B2AB500518274 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB16EBD80F2B2AB500518274 /* QuartzCore.framework */; };
 		BBE5EAB80F49AD8400F28951 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBE5EAB70F49AD8400F28951 /* AudioToolbox.framework */; };
+		CFAEC12F4F1129D93A98DFCC /* ofxUDPManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C6174C2896FFFA58EBE7EC /* ofxUDPManager.cpp */; };
 		E41D400B13B39D2100A75A5D /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E41D400613B39D2100A75A5D /* AVFoundation.framework */; };
 		E41D400C13B39D2100A75A5D /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E41D400713B39D2100A75A5D /* CoreMedia.framework */; };
 		E41D400D13B39D2100A75A5D /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E41D400813B39D2100A75A5D /* CoreVideo.framework */; };
@@ -55,49 +55,49 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0DB76BEBD0E8E7AAF53C91F9 /* ofxTCPClient.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPClient.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPClient.h; sourceTree = SOURCE_ROOT; };
+		10511607854BC0EBA951719D /* ofxNetwork.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxNetwork.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxNetwork.h; sourceTree = SOURCE_ROOT; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D6058910D05DD3D006BFB54 /* MarioCardCM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarioCardCM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		2DE43F78FD701A45AEEEFF63 /* ofxTCPServer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPServer.cpp; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPServer.cpp; sourceTree = SOURCE_ROOT; };
 		32CA4F630368D1EE00C91783 /* ofxiOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxiOS_Prefix.pch; sourceTree = "<group>"; };
-		3A371BCF22C60F6CCC3A43A0 /* ofxCoreMotion.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxCoreMotion.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src/ofxCoreMotion.h; sourceTree = SOURCE_ROOT; };
+		44A43FD4FABD226415043977 /* ofxTCPManager.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPManager.cpp; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPManager.cpp; sourceTree = SOURCE_ROOT; };
+		52847BAEB5ABA35970A457D4 /* ofxTCPServer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPServer.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPServer.h; sourceTree = SOURCE_ROOT; };
 		5326AEA710A23A0500278DE6 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
-		53CEEC7BC665D493B6292AD8 /* ofxUDPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxUDPManager.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxUDPManager.h; sourceTree = SOURCE_ROOT; };
 		53F323EA10A20EDB00E0DAE4 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
-		5C0F59E2F8CC18D05419B326 /* ofxTCPClient.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPClient.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPClient.h; sourceTree = SOURCE_ROOT; };
 		678E130717951530005B6D19 /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon@2x.png"; path = "bin/data/Icon@2x.png"; sourceTree = "<group>"; };
 		678E130917951536005B6D19 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Icon.png; path = bin/data/Icon.png; sourceTree = "<group>"; };
 		678E130B1795153C005B6D19 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Default.png; path = bin/data/Default.png; sourceTree = "<group>"; };
 		678E130D17951540005B6D19 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default@2x.png"; path = "bin/data/Default@2x.png"; sourceTree = "<group>"; };
 		678E130F17951549005B6D19 /* Default-568h@2x~iphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x~iphone.png"; path = "bin/data/Default-568h@2x~iphone.png"; sourceTree = "<group>"; };
 		67DFA53419F92A5E003B3434 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
-		89E8B409C0F26FC30BD8CD2C /* ofxTCPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPManager.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPManager.h; sourceTree = SOURCE_ROOT; };
-		92203683BC545795F23D81BF /* ofxTCPServer.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPServer.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPServer.h; sourceTree = SOURCE_ROOT; };
-		A823DB0E1D88C0320023095F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
-		A861A4921DA5B481007C45C3 /* SimpleSprite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleSprite.h; sourceTree = "<group>"; };
-		A861A4931DA5B481007C45C3 /* SimpleSprite.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SimpleSprite.mm; sourceTree = "<group>"; };
-		B560327B8C4DAAF65E89BD37 /* ofxTCPClient.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPClient.cpp; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPClient.cpp; sourceTree = SOURCE_ROOT; };
+		84C6174C2896FFFA58EBE7EC /* ofxUDPManager.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxUDPManager.cpp; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxUDPManager.cpp; sourceTree = SOURCE_ROOT; };
+		8D3BB5392F81685010557D75 /* ofxUDPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxUDPManager.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxUDPManager.h; sourceTree = SOURCE_ROOT; };
+		9C5AA8484C8C707CEE101F76 /* ofxNetworkUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxNetworkUtils.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxNetworkUtils.h; sourceTree = SOURCE_ROOT; };
+		A88311D11DBF27E500D830A2 /* SimpleSprite.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SimpleSprite.h; sourceTree = "<group>"; };
+		A88311D31DBF27EF00D830A2 /* SimpleSprite.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = SimpleSprite.mm; sourceTree = "<group>"; };
+		A88311D51DBF294500D830A2 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		B870434C44936F5BE88FA8AC /* ofxTCPManager.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxTCPManager.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPManager.h; sourceTree = SOURCE_ROOT; };
 		BB16EBD10F2B2A9500518274 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BB16EBD80F2B2AB500518274 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		BB24DDC910DA781C00E9C588 /* ofxiOS-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "ofxiOS-Info.plist"; sourceTree = "<group>"; };
 		BBE5EAB70F49AD8400F28951 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		C122590558469B7390A2E539 /* ofxCoreMotion.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 30; name = ofxCoreMotion.mm; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src/ofxCoreMotion.mm; sourceTree = SOURCE_ROOT; };
-		C5693ED4F0D728C6F1813FBB /* ofxUDPManager.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxUDPManager.cpp; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxUDPManager.cpp; sourceTree = SOURCE_ROOT; };
-		CD0643BFE551E2261F5F70AD /* ofxNetworkUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxNetworkUtils.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxNetworkUtils.h; sourceTree = SOURCE_ROOT; };
-		D0C1521C489F3C1A3161498A /* ofxTCPManager.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPManager.cpp; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPManager.cpp; sourceTree = SOURCE_ROOT; };
-		E1840993DA64211B7D8F0149 /* ofxNetwork.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxNetwork.h; path = ../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxNetwork.h; sourceTree = SOURCE_ROOT; };
+		CCE65232CF239F04F3B57EF3 /* ofxTCPServer.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPServer.cpp; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPServer.cpp; sourceTree = SOURCE_ROOT; };
+		D60B6F3D50C71146AF1D05CE /* ofxTCPClient.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxTCPClient.cpp; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src/ofxTCPClient.cpp; sourceTree = SOURCE_ROOT; };
+		E2B8E942D991859F004AE5BF /* ofxCoreMotion.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 30; name = ofxCoreMotion.mm; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src/ofxCoreMotion.mm; sourceTree = SOURCE_ROOT; };
 		E41D3ED613B38FB500A75A5D /* Project.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Project.xcconfig; sourceTree = "<group>"; };
-		E41D3EE513B3906D00A75A5D /* CoreOF.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = CoreOF.xcconfig; path = ../../../../../code/of/of_v0.9.3_ios_release/libs/openFrameworksCompiled/project/ios/CoreOF.xcconfig; sourceTree = SOURCE_ROOT; };
+		E41D3EE513B3906D00A75A5D /* CoreOF.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = CoreOF.xcconfig; path = ../../../../code/of/of_v0.9.3_ios_release/libs/openFrameworksCompiled/project/ios/CoreOF.xcconfig; sourceTree = SOURCE_ROOT; };
 		E41D400613B39D2100A75A5D /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		E41D400713B39D2100A75A5D /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		E41D400813B39D2100A75A5D /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		E41D400913B39D2100A75A5D /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
-		E41D40FD13B3A0D800A75A5D /* iOS+OFLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "iOS+OFLib.xcodeproj"; path = "../../../../../code/of/of_v0.9.3_ios_release/libs/openFrameworksCompiled/project/ios/iOS+OFLib.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		E41D40FD13B3A0D800A75A5D /* iOS+OFLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "iOS+OFLib.xcodeproj"; path = "../../../../code/of/of_v0.9.3_ios_release/libs/openFrameworksCompiled/project/ios/iOS+OFLib.xcodeproj"; sourceTree = SOURCE_ROOT; };
 		E4A823A312561BE3002F86A2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		E4D8936B11527B74007E1F53 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = src/main.mm; sourceTree = SOURCE_ROOT; };
 		E4D8936C11527B74007E1F53 /* ofApp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofApp.h; path = src/ofApp.h; sourceTree = SOURCE_ROOT; };
 		E4D8936D11527B74007E1F53 /* ofApp.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = ofApp.mm; path = src/ofApp.mm; sourceTree = SOURCE_ROOT; };
+		FE2AF8A45BADECDAB9499E44 /* ofxCoreMotion.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxCoreMotion.h; path = ../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src/ofxCoreMotion.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,7 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A823DB0F1D88C0320023095F /* CoreMotion.framework in Frameworks */,
+				A88311D61DBF294500D830A2 /* CoreMotion.framework in Frameworks */,
 				E41D421413B3A95300A75A5D /* libofxiOS_iphoneos_Debug.a in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
@@ -145,8 +145,8 @@
 		1D4E986E464DF366A11DC960 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				3A371BCF22C60F6CCC3A43A0 /* ofxCoreMotion.h */,
-				C122590558469B7390A2E539 /* ofxCoreMotion.mm */,
+				FE2AF8A45BADECDAB9499E44 /* ofxCoreMotion.h */,
+				E2B8E942D991859F004AE5BF /* ofxCoreMotion.mm */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -154,16 +154,16 @@
 		219374A14594D121F27FED3A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				E1840993DA64211B7D8F0149 /* ofxNetwork.h */,
-				CD0643BFE551E2261F5F70AD /* ofxNetworkUtils.h */,
-				B560327B8C4DAAF65E89BD37 /* ofxTCPClient.cpp */,
-				5C0F59E2F8CC18D05419B326 /* ofxTCPClient.h */,
-				D0C1521C489F3C1A3161498A /* ofxTCPManager.cpp */,
-				89E8B409C0F26FC30BD8CD2C /* ofxTCPManager.h */,
-				2DE43F78FD701A45AEEEFF63 /* ofxTCPServer.cpp */,
-				92203683BC545795F23D81BF /* ofxTCPServer.h */,
-				C5693ED4F0D728C6F1813FBB /* ofxUDPManager.cpp */,
-				53CEEC7BC665D493B6292AD8 /* ofxUDPManager.h */,
+				10511607854BC0EBA951719D /* ofxNetwork.h */,
+				9C5AA8484C8C707CEE101F76 /* ofxNetworkUtils.h */,
+				D60B6F3D50C71146AF1D05CE /* ofxTCPClient.cpp */,
+				0DB76BEBD0E8E7AAF53C91F9 /* ofxTCPClient.h */,
+				44A43FD4FABD226415043977 /* ofxTCPManager.cpp */,
+				B870434C44936F5BE88FA8AC /* ofxTCPManager.h */,
+				CCE65232CF239F04F3B57EF3 /* ofxTCPServer.cpp */,
+				52847BAEB5ABA35970A457D4 /* ofxTCPServer.h */,
+				84C6174C2896FFFA58EBE7EC /* ofxUDPManager.cpp */,
+				8D3BB5392F81685010557D75 /* ofxUDPManager.h */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -171,7 +171,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				A823DB0E1D88C0320023095F /* CoreMotion.framework */,
+				A88311D51DBF294500D830A2 /* CoreMotion.framework */,
 				678E130917951536005B6D19 /* Icon.png */,
 				678E130717951530005B6D19 /* Icon@2x.png */,
 				678E130B1795153C005B6D19 /* Default.png */,
@@ -271,8 +271,8 @@
 		E4D8936A11527B74007E1F53 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				A861A4921DA5B481007C45C3 /* SimpleSprite.h */,
-				A861A4931DA5B481007C45C3 /* SimpleSprite.mm */,
+				A88311D31DBF27EF00D830A2 /* SimpleSprite.mm */,
+				A88311D11DBF27E500D830A2 /* SimpleSprite.h */,
 				E4D8936B11527B74007E1F53 /* main.mm */,
 				E4D8936D11527B74007E1F53 /* ofApp.mm */,
 				E4D8936C11527B74007E1F53 /* ofApp.h */,
@@ -381,14 +381,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A861A4941DA5B481007C45C3 /* SimpleSprite.mm in Sources */,
+				A88311D41DBF27EF00D830A2 /* SimpleSprite.mm in Sources */,
 				E4D8936E11527B74007E1F53 /* main.mm in Sources */,
 				E4D8936F11527B74007E1F53 /* ofApp.mm in Sources */,
-				22958A50C20095A9681E3701 /* ofxCoreMotion.mm in Sources */,
-				886016D37D80D288135B4C20 /* ofxTCPClient.cpp in Sources */,
-				4CD852924FC8F9B5AC8DF34C /* ofxTCPManager.cpp in Sources */,
-				AF0FCA14C2D675E87832E0D1 /* ofxTCPServer.cpp in Sources */,
-				42F9C7CBCEEC887FB0B419FC /* ofxUDPManager.cpp in Sources */,
+				66BEACDFEDCA2990738B3BAD /* ofxCoreMotion.mm in Sources */,
+				810D5EE0AE3AF200E459DF3E /* ofxTCPClient.cpp in Sources */,
+				3D06CEEB15F71D90A39572BE /* ofxTCPManager.cpp in Sources */,
+				3C9C6CAE68718DCC5CF0F6E2 /* ofxTCPServer.cpp in Sources */,
+				CFAEC12F4F1129D93A98DFCC /* ofxUDPManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -452,9 +452,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(OF_CORE_HEADERS)",
-					src,
-					../../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src,
-					../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src,
+					../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src,
+					../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				ONLY_ACTIVE_ARCH = NO;
@@ -487,9 +486,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(OF_CORE_HEADERS)",
-					src,
-					../../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src,
-					../../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src,
+					../../../../code/of/of_v0.9.3_ios_release/addons/ofxCoreMotion/src,
+					../../../../code/of/of_v0.9.3_ios_release/addons/ofxNetwork/src,
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				ONLY_ACTIVE_ARCH = NO;

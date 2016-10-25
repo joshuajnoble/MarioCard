@@ -6,6 +6,8 @@
 #include "ofxNetwork.h"
 #include "SimpleSprite.h"
 
+#define TCP
+
 class arcPoint {
 public:
     float position;
@@ -36,10 +38,19 @@ class ofApp : public ofxiOSApp {
     void reconnect();
     void spin();
     
-        ofxCoreMotion coreMotion;
+    ofxCoreMotion coreMotion;
     
     int left, right;
+    
+#ifdef UDP
     ofxUDPManager client;
+#endif
+
+#ifdef TCP
+    char serverId;
+    ofxTCPClient client;
+#endif
+
     
     bool connected;
     
