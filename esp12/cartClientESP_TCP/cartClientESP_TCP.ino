@@ -35,6 +35,8 @@ void setup() {
     return;
   }
 
+  client.write("register_cart");
+
   unsigned long timeout = millis();
   while (client.available() == 0) {
     if (millis() - timeout > 5000) {
@@ -45,6 +47,7 @@ void setup() {
 
   if( client.available() ) {
     ID = client.read();
+    Serial.println(ID);
   }
 
   updateReq[7] = ID;

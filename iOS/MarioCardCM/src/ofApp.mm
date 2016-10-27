@@ -44,7 +44,17 @@ void ofApp::setup(){
     
     client.setup("192.168.42.1",3000);
     client.send(regStr);
-    client.receiveRawBytes(&serverId, 1 );
+    
+    char buf[8];
+    
+    client.receiveRawMsg(&buf[0], 8);
+    
+    int num = static_cast<int>(buf[0]);
+    
+    serverId = (char) num;
+    client.close();
+    
+    //client.receiveRawBytes(&serverId, 1 );
     
 #endif
     
@@ -156,7 +166,11 @@ void ofApp::update()
 #ifdef UDP
             client.Send(message.str().c_str(), message.str().size());
 #else
-            client.send(message.str());
+            if(!client.isConnected()) {
+                client.setup("192.168.42.1",3000);
+            }
+            client.send(udpMessage);
+            client.close();
 #endif
         }
         
