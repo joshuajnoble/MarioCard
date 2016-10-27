@@ -152,7 +152,7 @@ class MarioCardReqHandler(SocketServer.BaseRequestHandler):
 		return
 
 	def add_cart( self ):
-		print "add_controller "
+		print "add_cart "
 
 		global masterCartID
 		
@@ -184,7 +184,7 @@ class MarioCardReqHandler(SocketServer.BaseRequestHandler):
 			controllers.append(c)
 			# are there more controllers and carts than joints?
 			if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-				joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
+				joint = {'cart':carts[len(carts)-1], 'controller':c, 'speed':[127, 127], 'mod_speed':[127,127]}
 				print "adding joint cart " + str(c.id) + " " + str(controllers[len(controllers)-1].id)
 				cart_to_controller.append(joint)
 		else:
@@ -210,6 +210,7 @@ class MarioCardReqHandler(SocketServer.BaseRequestHandler):
 				l,r = get_speed(message)
 				joint['speed'][0] = l
 				joint['speed'][1] = r
+				print str(l) + " " + str(r)
 				return
 
 	def get_color(self, message):
@@ -235,7 +236,7 @@ class MarioCardReqHandler(SocketServer.BaseRequestHandler):
 
 	def update(self, data):
 		id = getId(data)
-		#print " cart ID is " + str(id) + " and there are " + str(len(cart_to_controller)) + " pairs to look through "
+		print " cart ID is " + str(id) + " and there are " + str(len(cart_to_controller)) + " pairs to look through "
 		for joint in cart_to_controller:
 			if(joint['cart'].id == id):
 				print "sending " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
@@ -251,8 +252,13 @@ class MarioCardReqHandler(SocketServer.BaseRequestHandler):
 ##############################################################################
 
 def get_speed(message):
-	l = int(message.split(':')[1])
-	r = int(message.split(':')[2])
+	try:
+		l = int(message.split(':')[1])
+		r = int(message.split(':')[2])
+	except ValueError:
+		l = 127 #ord(message.split(':')[1])
+		r =127 #ord(message.split(':')[2])
+	
 	return l,r
 
 #game running updates
@@ -351,7 +357,14 @@ def stringify( left, right):
 
 
 def getId( string ):
-	return int(string.split(':')[1])
+	_id = ''
+
+	try:
+		_id = int(string.split(':')[1])
+	except ValueError:
+		_id = ord(string.split(':')[1])
+
+	return _id
 
 try:
 
@@ -371,5 +384,6 @@ try:
 			thread_lock.release()
 
 except KeyboardInterrupt:
-	TCPSock.close()
+	server.shutdown()
+	t.join()
 
