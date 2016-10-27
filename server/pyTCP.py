@@ -13,10 +13,10 @@ from threading import RLock
 
 TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 listen_addr = ("localhost", 3000)
-TCPSock.settimeout(0.1)
-TCPSock.setblocking(0)
+#TCPSock.settimeout(0.1)
+#TCPSock.setblocking(0)
 TCPSock.bind(listen_addr)
-# TCPSock.listen(3)
+TCPSock.listen(3)
 
 controllers = []
 carts = []
@@ -99,7 +99,7 @@ class Game_Event:
 	def __setitem__(key, value):
 		values[key] = value
 
-	def __init__(_owner, _timestamp, _eventType):
+	def __init__(self, _owner, _timestamp, _eventType):
 		owner = _owner
 		timestamp = _timestamp
 		eventType = _eventType
@@ -150,15 +150,10 @@ def parse(data):
 
 	# thread_lock.acquire()
 
-	# Echo the back to the client
-	data = request.recv(16)
+	# data = request.recv(16)
 	#this needs to change
 	datastr = str(data.strip())
-	if "register_cart" in datastr:
-		add_cart()
-	elif "register_control" in datastr:
-		add_controller()
-	elif "color" in datastr:
+	if "color" in datastr:
 		get_color(datastr)
 	elif "speed" in datastr:
 		route_control_signal(datastr)
@@ -174,14 +169,46 @@ def parse(data):
 	elif "update" in datastr:
 		update(datastr)
 	else:
-		print "bad command  " + datastr
+		return #print "bad command  " + str(len(data)) + " " + datastr + " " + data
+
+	# thread_lock.release()
+
+	return
+
+def parseNoJoint(conn, data):
+
+	# global thread_lock
+
+	# thread_lock.acquire()
+
+	# data = request.recv(16)
+	datastr = str(data.strip())
+	print "parseNoJoint " + str(data) + " " + str(datastr)
+	if "color" in datastr:
+		get_color(datastr)
+	elif "speed" in datastr:
+		route_control_signal(datastr)
+	elif "disconnect_control" in datastr:
+		remove_controller(datastr)
+	elif "color" in datastr:
+		print datastr
+		get_color(datastr)
+	elif "keep_alive" in datastr:
+		keep_alive_cart(datastr)
+	elif "keep_alive_control" in datastr:
+		keep_alive_control(datastr)
+	elif "update" in datastr:
+		updateNoJoint(conn, datastr)
+	else:
+		return
+		#print "bad command  " + str(len(data)) + " " + datastr + " " + data
 
 	# thread_lock.release()
 
 	return
 
 def add_cart( message, connection ):
-	print "add_controller "
+	print "add_ccart "
 
 	global masterCartID
 	
@@ -189,14 +216,15 @@ def add_cart( message, connection ):
 		c = Cart(masterCartID, connection, time.time())
 		c.connection.send(str(masterCartID))
 		masterCartID += 1
-		carts.append(c)
 		# are there more controllers and carts than joints?
-		if(len(carts) > len(cart_to_controller) and len(controllers) > len(cart_to_controller)):
-			joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127], 'mod_speed':[127,127]}
-			print "adding joint cart " + str(c.id) + " " + str(controllers[len(controllers)-1].id)
+		if(len(controllers) > 0):
+			joint = {'cart':c, 'controller':controllers.pop(), 'speed':[127, 127], 'mod_speed':[127,127]}
+			print "adding joint cart " + str(joint['cart'].id) + " " + str(joint['controller'].id)
 			cart_to_controller.append(joint)
+		else:
+			carts.append(c)
 	else:
-		request.send(" too many carts already ")
+		connection.send(" too many carts already ")
 		#conn.close()
 	return
 
@@ -210,14 +238,15 @@ def add_controller( message, connection ):
 		c = Controller(masterControllerID, connection, time.time())
 		c.connection.send(str(masterControllerID))
 		masterControllerID += 1
-		controllers.append(c)
 		# are there more controllers and carts than joints?
-		if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-			joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
-			print "adding joint cart " + str(c.id) + " " + str(controllers[len(controllers)-1].id)
+		if(len(carts) > 0):
+			joint = {'cart':carts.pop(), 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
+			print "adding joint cart " + str(joint['cart'].id) + " " + str(joint['controller'].id)
 			cart_to_controller.append(joint)
+		else:
+			controllers.append(c)
 	else:
-		request.send(" too many controllers already ")
+		connection.send(" too many controllers already ")
 
 def remove_controller( message ):
 	print "remove controller "
@@ -233,6 +262,7 @@ def remove_cart( message ):
 
 
 def route_control_signal( message):
+	print " setting speed " + str(message)
 	id = getId(message) # 1st char
 	for joint in cart_to_controller:
 		if(joint['controller'].id == id):
@@ -268,7 +298,16 @@ def update(data):
 	for joint in cart_to_controller:
 		if(joint['cart'].id == id):
 			print "sending " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
-			request.send(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
+			joint['cart'].connection.send(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
+
+def updateNoJoint(connection, data):
+	id = getId(data)
+	print " cart ID is " + str(id) + " and there are " + str(len(cart_to_controller)) + " pairs to look through "
+	for joint in cart_to_controller:
+		print " cart ID is " + str(id) + " and there are " + str(len(cart_to_controller)) + " pairs to look through "
+		if(joint['cart'].id == id):
+			print " updateNoJoint " + str(id) + " " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
+			connection.send(stringify(joint['mod_speed'][0], joint['mod_speed'][1]))
 
 
 # game run functions
@@ -354,7 +393,6 @@ try:
 
 			conn, address = TCPSock.accept()
 			if conn != None:
-				print "new conn"
 				connections.append(conn)
 
 		except socket.error:
@@ -372,12 +410,12 @@ try:
 					# remove c from connections here
 					declaredconns.append(c)
 				elif "register_control" in data:
-					print "register_cart"
+					print "register_control"
 					add_controller(data, c)
 					declaredconns.append(c)
 					# remove c from connections here
 				else:
-					print data
+					parseNoJoint(c, data)
 			except socket.error:
 				continue #nothing there, oh well
 
