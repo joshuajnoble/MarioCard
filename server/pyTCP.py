@@ -12,8 +12,9 @@ from threading import RLock
 
 
 TCPSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-listen_addr = ("localhost", 3000)
-#TCPSock.settimeout(0.1)
+TCPSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+listen_addr = ("", 3000)
+TCPSock.settimeout(0.1)
 #TCPSock.setblocking(0)
 TCPSock.bind(listen_addr)
 TCPSock.listen(3)
@@ -110,8 +111,24 @@ class Game_Event:
 ##############################################################################
 
 def get_speed(message):
-	l = int(message.split(':')[1])
-	r = int(message.split(':')[2])
+	sp = message.split(';')[0]
+	try:
+		l = int(sp.split(':')[1])
+	except ValueError:
+		m = map(ord, sp.split(':')[2])
+		ls = ""
+		for c in m:
+			ls += str(c)
+		l = int(ls)
+
+	try:
+		r = int(sp.split(':')[2])
+	except ValueError:
+		m = map(ord, sp.split(':')[2])
+		rs = ""
+		for c in m:
+			rs += str(c)
+		r = int(rs)
 	return l,r
 
 #game running updates
@@ -167,6 +184,7 @@ def parse(data):
 	elif "keep_alive_control" in datastr:
 		keep_alive_control(datastr)
 	elif "update" in datastr:
+		print " update datastr " + str(datastr)
 		update(datastr)
 	else:
 		return #print "bad command  " + str(len(data)) + " " + datastr + " " + data
@@ -183,7 +201,7 @@ def parseNoJoint(conn, data):
 
 	# data = request.recv(16)
 	datastr = str(data.strip())
-	print "parseNoJoint " + str(data) + " " + str(datastr)
+	#print "parseNoJoint " + str(data) + " " + str(datastr)
 	if "color" in datastr:
 		get_color(datastr)
 	elif "speed" in datastr:
@@ -240,7 +258,7 @@ def add_controller( message, connection ):
 		masterControllerID += 1
 		# are there more controllers and carts than joints?
 		if(len(carts) > 0):
-			joint = {'cart':carts.pop(), 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
+			joint = {'cart':carts.pop(), 'controller':c, 'speed':[127, 127], 'mod_speed':[127,127]}
 			print "adding joint cart " + str(joint['cart'].id) + " " + str(joint['controller'].id)
 			cart_to_controller.append(joint)
 		else:
@@ -371,13 +389,16 @@ def stringify( left, right):
 	else:
 		datastring += str(modRight)
 
-	datastring += ';'
+	#datastring += ';'
 
 	return datastring
 
 
 def getId( string ):
-	return int(string.split(':')[1])
+	try:
+		return int(string.split(':')[1])
+	except ValueError:
+		return ord(string.split(':')[1])
 
 try:
 
@@ -393,6 +414,7 @@ try:
 
 			conn, address = TCPSock.accept()
 			if conn != None:
+				print "new connection"
 				connections.append(conn)
 
 		except socket.error:
@@ -423,7 +445,7 @@ try:
 		# figure out if a connection has closed
 
 		# this works to remove conns that have said what they are
-		connections[:] = [c for c in connections if c in declaredconns]
+		connections[:] = [c for c in connections if c not in declaredconns]
 
 		for joint in cart_to_controller:
 			try:

@@ -95,23 +95,24 @@ def add_cart( address):
 	
 	c = Cart(address, time.time())
 
-	exists = False
-	for c in carts:
-		if c.addr == address:
-			exists = True
+	#exists = False
+	#for c in carts:
+	#	if c.addr == address:
+	#		exists = True
 
-	if exists == False:
-		carts.append(c)
-	else:
-		print "cart exists, not adding"
-
-	return
+	#if exists == False:
+	#	carts.append(c)
+	#else:
+	#	print "cart exists, not adding"
+	#return
 
 	# are there more controllers and carts than joints?
-	if(len(carts) > len(cart_to_controller) and len(controllers) > len(cart_to_controller)):
-		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127], 'mod_speed':[127,127]}
+	if(len(controllers) > 0):
+		joint = {'cart':c, 'controller':controllers.pop(), 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
+	else:
+		carts.append(c)
 
 def add_controller( address):
 	print "add_controller " + str(address)
@@ -119,20 +120,22 @@ def add_controller( address):
 	cont = Controller(address, time.time())
 	controllers.append(cont)
 	# are there more controllers and carts than joints?
-	if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-		joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
+	if(len(carts) > 0):
+		joint = {'cart':carts.pop(), 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
+	else:
+		controllers.append(cont)
 
 def remove_controller( address ):
 	print "remove controller "
 	[cart_to_controller.remove(j) for j in cart_to_controller if j['controller'].addr == address]
-	[controllers.remove(c) for c in controllers if c.addr == address]
+	#[controllers.remove(c) for c in controllers if c.addr == address]
 
 def remove_cart( address ):
 	print "remove cart "
 	[cart_to_controller.remove(j) for j in cart_to_controller if j['cart'].addr == address]
-	[carts.remove(c) for c in carts if c.addr == address]
+	#[carts.remove(c) for c in carts if c.addr == address]
 
 def remove_pair( address):
 	try:
@@ -217,38 +220,38 @@ def game_update():
 
 def speed_up(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address == event.owner):
+		if(joint['cart'].addr == event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*1.5
 			joint['mod_speed'][1] = joint['mod_speed'][1]*1.5
 
 def slow_down(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*0.5
 			joint['mod_speed'][1] = joint['mod_speed'][1]*0.5
 
 def circle(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = 255
 			joint['mod_speed'][1] = 0
 
 def skew_right(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*0.6
 			joint['mod_speed'][1] = joint['mod_speed'][1]
 
 def skew_left(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]
 			joint['mod_speed'][1] = joint['mod_speed'][1]*0.6
 
 
 def flip_controls(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][1]
 			joint['mod_speed'][1] = joint['mod_speed'][0]
 
