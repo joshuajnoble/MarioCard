@@ -6,7 +6,7 @@
 #include "ofxNetwork.h"
 #include "SimpleSprite.h"
 
-#define TCP
+#define UDP
 
 class arcPoint {
 public:
@@ -47,11 +47,11 @@ class ofApp : public ofxiOSApp {
 #endif
 
 #ifdef TCP
-    char serverId;
+    int serverId;
     ofxTCPClient client;
 #endif
 
-    
+    uint64_t lastSend;
     bool connected;
     
     float speed;

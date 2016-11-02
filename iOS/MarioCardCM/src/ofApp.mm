@@ -1,5 +1,9 @@
 #include "ofApp.h"
 
+static const int minPitch = -1.0;
+static const int maxPitch = 1.0;
+
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -42,6 +46,7 @@ void ofApp::setup(){
     
 #else
     
+    client.setMessageDelimiter("");
     client.setup("192.168.42.1",3000);
     client.send(regStr);
     
@@ -51,8 +56,8 @@ void ofApp::setup(){
     
     int num = static_cast<int>(buf[0]);
     
-    serverId = (char) num;
-    client.close();
+    serverId = num;
+    //client.close();
     
     //client.receiveRawBytes(&serverId, 1 );
     
@@ -118,10 +123,10 @@ void ofApp::update()
     coreMotion.update();
     
     float pitch = coreMotion.getPitch();
-    pitch = ofClamp(pitch, -1.4, 1.4);
+    pitch = ofClamp(pitch, minPitch, maxPitch);
     
-    left = ofMap(pitch, -1.4, 1.4, -127, 127);
-    right = ofMap(pitch, -1.4, 1.4, 127, -127);
+    left = ofMap(pitch, minPitch, maxPitch, -127, 127);
+    right = ofMap(pitch, minPitch, maxPitch, 127, -127);
     
     // figure out speed and direction from L/R tread
     //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
@@ -131,9 +136,9 @@ void ofApp::update()
     {
     
         // send a message over our socket about our speed & position
-        if(ofGetFrameNum() % 5 == 0) // 10hz refresh?
+        if(ofGetElapsedTimeMillis() - lastSend > 200) // 10hz refresh?
         {
-            
+            lastSend = ofGetElapsedTimeMillis();
             float trueSteer = left - right;
             
             int leftTread = 90 * speed;
@@ -158,19 +163,29 @@ void ofApp::update()
             }
             
             // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+            
+#ifdef UDP
+            stringstream message;
+            message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
+            //cout << message.str() << endl;
+            udpMessage = message.str();
+            
+            client.Send(message.str().c_str(), message.str().size());
+#else
             stringstream message;
             message << "speed:" << serverId << ":" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
             //cout << message.str() << endl;
             udpMessage = message.str();
             
-#ifdef UDP
-            client.Send(message.str().c_str(), message.str().size());
-#else
             if(!client.isConnected()) {
                 client.setup("192.168.42.1",3000);
             }
-            client.send(udpMessage);
-            client.close();
+            if(client.send(udpMessage)) {
+                cout << "sent " << udpMessage << endl;
+            } else {
+                cout << " couldn't send " << endl;
+            }
+            //client.close();
 #endif
         }
         
@@ -323,6 +338,14 @@ void ofApp::touchDown(ofTouchEventArgs & touch){
     {
         reconnect();
     }
+    else if( spinSprite.hitTest(touch) )
+    {
+#ifdef UDP
+        client.Send("do_spin", 7);
+#else
+        
+#endif
+    }
     else
     {
         speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
@@ -417,7 +440,12 @@ void ofApp::reconnect()
     // now register
     string regStr = "register_control";
     client.send("register_control");
-    client.receiveRawBytes(&serverId, 1 );
+    
+    char buf[8];
+    client.receiveRawMsg(&buf[0], 8);
+    int num = static_cast<int>(buf[0]);
+    
+    serverId = num;
     
 #endif
     
