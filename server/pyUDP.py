@@ -94,48 +94,62 @@ class Game_Event:
 #initializations
 
 def add_cart( address):
+
+	global carts
+	global controllers
+	global cart_to_controller
+
 	print "add_cart " + str(address)
 	
 	c = Cart(address, time.time())
 
-	exists = False
-	for c in carts:
-		if c.addr == address:
-			exists = True
+	#exists = False
+	#for c in carts:
+	#	if c.addr == address:
+	#		exists = True
 
-	if exists == False:
-		carts.append(c)
-	else:
-		print "cart exists, not adding"
-
-	return
+	#if exists == False:
+	#	carts.append(c)
+	#else:
+	#	print "cart exists, not adding"
+	#return
 
 	# are there more controllers and carts than joints?
-	if(len(carts) > len(cart_to_controller) and len(controllers) > len(cart_to_controller)):
-		joint = {'cart':c, 'controller':controllers[len(controllers)-1], 'speed':[127, 127], 'mod_speed':[127,127]}
+	if(len(controllers) > 0):
+		print str(len(controllers))
+		joint = {'cart':c, 'controller':controllers.pop(), 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
+		print str(len(controllers))
+	else:
+		carts.append(c)
 
 def add_controller( address):
+	
 	print "add_controller " + str(address)
+	global cart_to_controller
+	global cart
+	global controller
 
 	cont = Controller(address, time.time())
-	controllers.append(cont)
 	# are there more controllers and carts than joints?
-	if(len(controllers) > len(cart_to_controller) and len(carts) > len(cart_to_controller)):
-		joint = {'cart':carts[len(carts)-1], 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
+	if(len(carts) > 0):
+		joint = {'cart':carts.pop(), 'controller':cont, 'speed':[127, 127], 'mod_speed':[127,127]}
 		print "adding joint cart " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		cart_to_controller.append(joint)
+	else:
+		controllers.append(cont)
 
-def remove_controller( address ):
-	print "remove controller "
-	[cart_to_controller.remove(j) for j in cart_to_controller if j['controller'].addr == address]
-	[controllers.remove(c) for c in controllers if c.addr == address]
-
-def remove_cart( address ):
-	print "remove cart "
-	[cart_to_controller.remove(j) for j in cart_to_controller if j['cart'].addr == address]
-	[carts.remove(c) for c in carts if c.addr == address]
+def clear_joint( cart_addr, control_addr ):
+	print "clearing from cart to controller "
+	global cart_to_controller
+	if cart_addr is not None:
+		[controllers.append(j['controller']) for j in cart_to_controller if j['cart'].addr == cart_addr]
+		[cart_to_controller.remove(j) for j in cart_to_controller if j['cart'].addr == cart_addr]
+	
+	if control_addr is not None:
+		[carts.append(j['cart']) for j in cart_to_controller if j['controller'].addr == control_addr]
+		[cart_to_controller.remove(j) for j in cart_to_controller if j['controller'].addr == control_addr]
 
 def remove_pair( address):
 	try:
@@ -147,7 +161,7 @@ def remove_pair( address):
 		print "no cart_to_controller"
 
 
-def route_control_signal( address, message):
+def update_speed( address, message):
 	for joint in cart_to_controller:
 		if(joint['controller'].addr == address):
 			l,r = get_speed(message)
@@ -157,7 +171,15 @@ def route_control_signal( address, message):
 			#UDPSock.sendto(stringify(joint['speed'][0], joint['speed'][1]), joint['cart'])
 			return
 
+def send_do_spin(address, message):
+	for joint in cart_to_controller:
+		if( joint['controller'].addr == address):
+			print "sending spin"
+			UDPSock.sendto("do_spin", joint['cart'].addr)
+
 def get_color( address, message):
+	global events
+
 	print "color " + str(message)
 	eventColor = message.split(':')[1][0]
 	if not eventColor in possible_events:
@@ -186,10 +208,11 @@ def get_speed(message):
 
 #game running updates
 
-def game_update():
+def game_update(events, cart_to_controller):
 
 	#print "game update"
-	global events
+	#global events
+	#global cart_to_controller
 
 	for joint in cart_to_controller:
 		joint['mod_speed'][0] = joint['speed'][0]
@@ -214,44 +237,45 @@ def game_update():
 	events[:] = [event for event in events if time.time() - event.timestamp < 5.0]
 
 	for joint in cart_to_controller:
+		print "sending " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1])) + " " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		UDPSock.sendto(stringify(joint['mod_speed'][0], joint['mod_speed'][1]), joint['cart'].addr)
 
 # game run functions
 
 def speed_up(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address == event.owner):
+		if(joint['cart'].addr == event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*1.5
 			joint['mod_speed'][1] = joint['mod_speed'][1]*1.5
 
 def slow_down(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*0.5
 			joint['mod_speed'][1] = joint['mod_speed'][1]*0.5
 
 def circle(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = 255
 			joint['mod_speed'][1] = 0
 
 def skew_right(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]*0.6
 			joint['mod_speed'][1] = joint['mod_speed'][1]
 
 def skew_left(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][0]
 			joint['mod_speed'][1] = joint['mod_speed'][1]*0.6
 
 
 def flip_controls(event):
 	for joint in cart_to_controller:
-		if(joint['cart'].client_address != event.owner):
+		if(joint['cart'].addr != event.owner):
 			joint['mod_speed'][0] = joint['mod_speed'][1]
 			joint['mod_speed'][1] = joint['mod_speed'][0]
 
@@ -301,8 +325,6 @@ def keep_alive_controller(addr):
 	# 		remove_pair(c.addr)
 
 
-
-
 ##############################################################################
 # make a lock
 thread_lock = RLock()
@@ -310,13 +332,15 @@ run_event = threading.Event()
 
 #functions to be called in threads
 def run_game():
+	global events
+	global cart_to_controller
 	while run_event.is_set():
 		#print "g + " + str( time.time())
 		thread_lock.acquire()
-		game_update()
+		game_update(events, cart_to_controller)
 		thread_lock.release()
 		#print "g - " + str(time.time())
-		time.sleep(0.1)
+		time.sleep(0.2)
 
 #now run the UDP thread
 def run_udp():
@@ -326,6 +350,7 @@ def run_udp():
 		try:
 			data,addr = UDPSock.recvfrom(32)
 			datastr = str(data.strip())
+			#print datastr
 			if "register_cart" in datastr:
 				add_cart(addr)
 			elif "register_control" in datastr:
@@ -333,15 +358,19 @@ def run_udp():
 			elif "color" in datastr:
 				get_color(addr, data)
 			elif "speed" in datastr:
-				route_control_signal(addr, data)
+				update_speed(addr, data)
+			elif "disconnect_cart" in datastr:
+				clear_joint(addr, None)
 			elif "disconnect_control" in datastr:
-				remove_controller(addr)
+				clear_joint(None, addr)
 			elif "color" in datastr:
 				print datastr
 			elif "keep_alive" in datastr:
 				keep_alive_cart(addr)
 			elif "keep_alive_control" in datastr:
 				keep_alive_control(addr)
+			elif "do_spin" in datastr:
+				send_do_spin(addr, datastr)
 			else:
 				print "bad command  " + datastr
 
