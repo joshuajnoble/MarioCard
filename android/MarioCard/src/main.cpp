@@ -11,6 +11,7 @@ int main(){
 	return 0;
 }
 
+#ifdef ANDROID
 
 #ifdef TARGET_ANDROID
 #include <jni.h>
@@ -21,4 +22,6 @@ extern "C"{
 		main();
 	}
 }
+#endif
+
 #endif

@@ -19,6 +19,7 @@ int recvTotal = 0;
 
 unsigned long keepAlive;
 
+
 void setup() {
 
   commandBuffer = new char[32];
@@ -38,7 +39,7 @@ void setup() {
     delay(500);
   }
   udp.begin(3000);
-
+ 
   // now register the cart with the server
   char registerCart[] = "register_cart";
   udp.beginPacket(cartServer, 3000);
@@ -47,10 +48,32 @@ void setup() {
 
   hasSetUpCart = true;
   keepAlive = millis();
+
+  // reset pin
+  pinMode(12, INPUT);
 }
 
 void loop() {
 
+  if(digitalRead(12) == LOW)
+  {
+    if(hasSetUpCart)
+    {
+      hasSetUpCart = false;
+      udp.beginPacket(cartServer, 3000);
+      udp.write("disconnect_cart", 15);
+      udp.endPacket();
+    }
+    else
+    {
+      hasSetUpCart = true;
+      char registerCart[] = "register_cart";
+      udp.beginPacket(cartServer, 3000);
+      udp.write(&registerCart[0], 13);
+      udp.endPacket();
+    }
+    delay(500); // debounce by delay
+  }
 
   // put your main code here, to run repeatedly:
   if (Serial.available() > 0)
@@ -133,6 +156,7 @@ void loop() {
     for ( int i = 0; i < 7; i++ ) {
       Serial.print(sendBuffer[i]);
     }
+    Serial.print(';'); // delimiter
     memset(&sendBuffer[0], 0, 7);
   }
   udp.flush();

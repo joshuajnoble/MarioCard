@@ -55,6 +55,7 @@ char colorNames[] = {'p', 'b', 'y', 'o', 'g' };
 char lastFoundColor;
 
 bool lastReqResponded = false;
+bool hasCompleteMessage = false;
 
 const int MESSAGE_SIZE = 7;
 char inBuf[9];
@@ -62,21 +63,17 @@ char outBuf[128];
 uint8_t outBufInd = 0;
 
 uint16_t left = 127, right = 127;
-HardwareSerial* serialPort;
+int byteCount = 0;
 
 void setup()
 {
 
 #ifdef DEBUGGING
-
-  serialPort = &Serial;
-#else
-
-  serialPort = &Serial1; 
-    
+  
+  Serial.begin(115200);
 #endif
 
-  serialPort->begin(115200);
+  Serial1.begin(115200);
 
   // set up the motor driver
   pinMode(PWML, OUTPUT);
@@ -97,8 +94,6 @@ void setup()
   digitalWrite(8, HIGH);
 
 }
-
-
 void loop()
 {
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,7 +121,7 @@ void loop()
     {
       if (fabs(hues[i] - outColor.h) < 20.0)
       {
-        serialPort->println(colorNames[i]);
+        Serial1.println(colorNames[i]);
         // wait just a second to get the serial clear
         delay(50);
       }
@@ -139,76 +134,97 @@ void loop()
   // esp comm loop
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  int byteCount = 0;
-  if(serialPort->available() > 6)
+  if(Serial1.available())
   {
-    while (serialPort->available() && byteCount < 15)
+    while (Serial1.available())
     {
-      receiveBuffer[byteCount] = serialPort->read();
+      char c = Serial1.read();
+      if(byteCount < 15) {
+        receiveBuffer[byteCount] = c;
+      }
+      if( c == ';' )
+      {
+        hasCompleteMessage = true;
+      }
       byteCount++;
     }
+  }
 
-    while (serialPort->available()) {
-      serialPort->read(); // don't care about the rest
-    }
-  
-    if (byteCount > 6) // do we have enough bytes
+  if(hasCompleteMessage)
+  {
+#ifdef DEBUGGING
+    Serial.print(" rcvbuff is ");
+    Serial.print(receiveBuffer);
+    Serial.print(" byteCount is ");
+    Serial.println(byteCount);
+#endif
+    if (byteCount > 2) // do we have enough bytes
     {
-  
-  
-  //    // this is a bad hack
-  //    int ii = 0;
-  //    char *d = &receiveBuffer[0];
-  //    while ( *d != 'd' && ii < byteCount ) {
-  //      ++d;
-  //      ii++;
-  //    }
-  //
-  //    bool matchesSpin = false;
-  //    int loopthrough = 0;
-  //    const int minLengthAllowable = 4; // I need this because for some reason on my compiler I can't successfully compare 7 and 5??
-  //    if (*d == 'd') {
-  //      while ( *d == spin[loopthrough] ) {
-  //        loopthrough++;
-  //        ++d;
-  //      }
-  //    }
-  //
-  //    if ( loopthrough > minLengthAllowable  ) {
-  //      matchesSpin = true;
-  //    }
-  
       receiveBuffer[byteCount] = '\0';
   
       if (strstr(receiveBuffer, spinStr))
       {
         setMotors(255, 0); // we're going to spin
         delay(3000);
+        setMotors(127, 127);
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
       }
-      else
+      else if(checkValidMessage(&receiveBuffer[0], byteCount))
       {
-  
         char *rb = &receiveBuffer[0];
-        while (!isdigit( (int) *rb)) {
+        while (!isdigit( (int) *rb) && rb != receiveBuffer[byteCount]) {
           *rb = ' ';
           ++rb;
         }
-  
+
         // Read each command pair
         char* command = strchr(receiveBuffer, ':');
         if (command != 0)
         {
-          left = constrain(atoi(&receiveBuffer[0]), 0, 255);
+          left = constrain(atoi(&receiveBuffer[0]), 0, 254);
           ++command;
-          right = constrain(atoi(command), 0, 255);
+          right = constrain(atoi(command), 0, 254);
+#ifdef DEBUGGING
+          Serial.print(left);
+          Serial.print(" ");
+          Serial.println(right);
+#endif
           setMotors(left, right);
         }
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
+      }
+      else if( byteCount > 6 )
+      {
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
       }
     }
+
+    hasCompleteMessage = false; // reset
   }
 }
 
-
+bool checkValidMessage( char *message, int len )
+{
+  
+  if(len < 3)
+  {
+#ifdef DEBUGGING
+    Serial.print("not long enough");
+#endif
+    return false;
+  }
+  if(strchr(message, ':') == NULL)
+  {
+#ifdef DEBUGGING
+    Serial.print("no : ");
+#endif
+    return false;
+  }
+  return true;
+}
 
 hsv rgb2hsv(rgb in)
 {

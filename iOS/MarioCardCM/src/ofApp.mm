@@ -1,67 +1,38 @@
+
 #include "ofApp.h"
 
-static const int minPitch = -1.0;
-static const int maxPitch = 1.0;
-
+#ifdef ANDROID
+static const int minPitch = -1.1;
+static const int maxPitch = 1.1;
+#else
+static const int minPitch = -1.1;
+static const int maxPitch = 1.1;
+#endif
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    connected = false;
     
-    isConnected = false;
+#ifdef ANDROID
+    ofxAccelerometer.setup();
     
-    disconnectSprite.setText("disconnect");
-    disconnectSprite.setPosition(ofVec2f(20, 30));
-    disconnectSprite.setScale(ofVec2f(100, 30));
-    
-    reconnectSprite.setText("reconnect");
-    reconnectSprite.setPosition(ofVec2f(20, 65));
-    reconnectSprite.setScale(ofVec2f(100, 30));
-    
-    spinSprite.setText("spin");
-    spinSprite.setPosition(ofVec2f(20, 100));
-    spinSprite.setScale(ofVec2f(100, 30));
-    
-    reconnectSprite.setText("reconnect");
-    reconnectSprite.setPosition(ofVec2f(20, 65));
-    reconnectSprite.setScale(ofVec2f(100, 30));
-    
+#else
     coreMotion.setupMagnetometer();
     coreMotion.setupGyroscope();
     coreMotion.setupAccelerometer();
     coreMotion.setupAttitude(CMAttitudeReferenceFrameXMagneticNorthZVertical);
+    coreMotion.resetAttitude();
+#endif
     
-    connected = false;
-    
-    string regStr = "register_control";
-    
-#ifdef UDP
     
     // make a udp connection that we can stream data to
     client.Create();
-    client.Connect("192.168.42.1",3000);
+    client.Connect("192.168.42.1", 3000);
     client.SetNonBlocking(true);
     
+    string regStr = "register_control";
     // now register
     client.Send(regStr.c_str(), regStr.size());
-    
-#else
-    
-    client.setMessageDelimiter("");
-    client.setup("192.168.42.1",3000);
-    client.send(regStr);
-    
-    char buf[8];
-    
-    client.receiveRawMsg(&buf[0], 8);
-    
-    int num = static_cast<int>(buf[0]);
-    
-    serverId = num;
-    //client.close();
-    
-    //client.receiveRawBytes(&serverId, 1 );
-    
-#endif
     
     isConnected = true;
     
@@ -105,21 +76,46 @@ void ofApp::setup(){
     right = 0;
     
     carIcon.load("car2.png");
-    coreMotion.resetAttitude();
     
     mouseDown = false;
     keepAliveTimer = ofGetElapsedTimef();
+    
+    disconnectSprite.setText("disconnect");
+    disconnectSprite.setPosition(ofVec2f(20, 30));
+    disconnectSprite.setScale(ofVec2f(100, 30));
+    
+    reconnectSprite.setText("reconnect");
+    reconnectSprite.setPosition(ofVec2f(20, 65));
+    reconnectSprite.setScale(ofVec2f(100, 30));
+    
+    spinSprite.setText("spin");
+    spinSprite.setPosition(ofVec2f(20, 100));
+    spinSprite.setScale(ofVec2f(100, 30));
+    
+    reconnectSprite.setText("reconnect");
+    reconnectSprite.setPosition(ofVec2f(20, 65));
+    reconnectSprite.setScale(ofVec2f(100, 30));
+    
 }
 
 //--------------------------------------------------------------
-void ofApp::update()
-{
+void ofApp::update(){
     
     if(!mouseDown)
     {
         speed *= 0.99;
     }
     
+#ifdef ANDROID
+    
+    accel = ofxAccelerometer.getRawAcceleration();
+    // figure out speed and direction from L/R tread
+    float steer = ofMap(accel.x, -1.1, 1.1, 0, ofGetWidth());
+    
+    left = ofMap(accel.x, -1.1, 1.1, -127, 127);
+    right = ofMap(accel.x, -1.1, 1.1, 127, -127);
+    
+#else
     coreMotion.update();
     
     float pitch = coreMotion.getPitch();
@@ -132,23 +128,25 @@ void ofApp::update()
     //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
     float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
     
+#endif
+    
     if(isConnected)
     {
-    
+        
         // send a message over our socket about our speed & position
-        if(ofGetElapsedTimeMillis() - lastSend > 200) // 10hz refresh?
+        if(ofGetElapsedTimeMillis() - lastSend > 200) // 5hz refresh?
         {
             lastSend = ofGetElapsedTimeMillis();
             float trueSteer = left - right;
             
-            int leftTread = 90 * speed;
-            int rightTread = 90 * speed;
+            int leftTread = 95 * speed;
+            int rightTread = 95 * speed;
             
             const int steerValue = 40;
             
             if(speed > 0.0)
             {
-            
+                
                 // all the way to the left will be -254, so slow left tread to we steer to left
                 leftTread -= ofMap(trueSteer, -254, 254, -steerValue, steerValue);
                 // all the way to the right will be 254, so slow right tread to we steer to right
@@ -163,39 +161,13 @@ void ofApp::update()
             }
             
             // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
-            
-#ifdef UDP
             stringstream message;
             message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
-            //cout << message.str() << endl;
+            cout << message.str() << endl;
             udpMessage = message.str();
             
             client.Send(message.str().c_str(), message.str().size());
-#else
-            stringstream message;
-            message << "speed:" << serverId << ":" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
-            //cout << message.str() << endl;
-            udpMessage = message.str();
-            
-            if(!client.isConnected()) {
-                client.setup("192.168.42.1",3000);
-            }
-            if(client.send(udpMessage)) {
-                cout << "sent " << udpMessage << endl;
-            } else {
-                cout << " couldn't send " << endl;
-            }
-            //client.close();
-#endif
         }
-        
-//        if(ofGetElapsedTimef() - keepAliveTimer > 4.0)
-//        {
-//            string keepAlive = "keep_alive_control";
-//            client.Send(keepAlive.c_str(), keepAlive.size());
-//            keepAliveTimer = ofGetElapsedTimef();
-//        }
-        
     }
     
     // make a brand new arc using our steer
@@ -251,7 +223,6 @@ void ofApp::update()
             arcPoints.push_front(p);
         }
     }
-
 }
 
 //--------------------------------------------------------------
@@ -294,12 +265,12 @@ void ofApp::draw(){
     ofSetColor(255, 255, 255);
     carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
     
-//    stringstream ss;
-//    ss <<  left << " " << right;
-//    
-//    ofDrawBitmapString(ss.str(), 30, 30);
-//    ofDrawBitmapString(udpMessage, 30, 50);
-
+    //    stringstream ss;
+    //    ss <<  left << " " << right;
+    //
+    //    ofDrawBitmapString(ss.str(), 30, 30);
+    //    ofDrawBitmapString(udpMessage, 30, 50);
+    
     ofPushMatrix();
     ofTranslate(reconnectSprite.getBounds().x, reconnectSprite.getBounds().y);
     reconnectSprite.draw();
@@ -318,14 +289,163 @@ void ofApp::draw(){
     ofSetColor(255, 0, 0);
     ofDrawRectangle(ofGetWidth() - 40, (ofGetHeight()/2), 42, speed * -160);
     ofSetColor(255, 255, 255);
+}
+
+void ofApp::spin()
+{
+    cout << " spin " << endl;
+    if(isConnected)
+    {
+        string spinStr = "spin_control";
+        client.Send(spinStr.c_str(), spinStr.size());
+    }
+}
+
+void ofApp::disconnect()
+{
+    cout << " disconnect " << endl;
+    if(isConnected)
+    {
+        isConnected = false;
+        string disconnectStr = "disconnect_control";
+        
+        client.Send(disconnectStr.c_str(), disconnectStr.size());
+        client.Close();
+    }
+}
+
+void ofApp::reconnect()
+{
+    cout << " reconnect " << endl;
+    client.Create();
+    client.Connect("192.168.42.1",3000);
+    client.SetNonBlocking(true);
     
+    // now register
+    string regStr = "register_control";
+    client.Send("register_control", regStr.size());
+    
+    
+    isConnected = true;
+}
+
+
+#ifdef ANDROID
+
+//--------------------------------------------------------------
+void ofApp::touchDown(int x, int y, int id){
+    if( disconnectSprite.hitTest(touch))
+    {
+        disconnect();
+    }
+    else if( reconnectSprite.hitTest(touch))
+    {
+        reconnect();
+    }
+    else if( spinSprite.hitTest(touch) )
+    {
+        client.Send("do_spin", 7);
+    }
+    else
+    {
+        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+        mouseDown = true;
+    }
     
 }
 
 //--------------------------------------------------------------
-void ofApp::exit(){
-
+void ofApp::touchMoved(int x, int y, int id){
+    // used to be 0.03 to -0.03
+    if( disconnectSprite.hitTest(touch))
+    {
+        //disconnect();
+    }
+    else if( reconnectSprite.hitTest(touch))
+    {
+        //reconnect();
+        //nonExistentMethod();
+    }
+    else
+    {
+        
+        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+    }
 }
+
+//--------------------------------------------------------------
+void ofApp::touchUp(int x, int y, int id){
+    mouseDown = false;
+}
+
+//--------------------------------------------------------------
+void ofApp::touchDoubleTap(int x, int y, int id){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::touchCancelled(int x, int y, int id){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::swipe(ofxAndroidSwipeDir swipeDir, int id){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::pause(){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::stop(){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::resume(){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::reloadTextures(){
+    
+}
+
+//--------------------------------------------------------------
+bool ofApp::backPressed(){
+    return false;
+}
+
+//--------------------------------------------------------------
+void ofApp::okPressed(){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::cancelPressed(){
+    
+}
+
+
+//--------------------------------------------------------------
+void ofApp::keyPressed  (int key){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::keyReleased(int key){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::windowResized(int w, int h){
+    
+}
+
+#else
+
 
 //--------------------------------------------------------------
 void ofApp::touchDown(ofTouchEventArgs & touch){
@@ -340,11 +460,7 @@ void ofApp::touchDown(ofTouchEventArgs & touch){
     }
     else if( spinSprite.hitTest(touch) )
     {
-#ifdef UDP
         client.Send("do_spin", 7);
-#else
-        
-#endif
     }
     else
     {
@@ -367,7 +483,7 @@ void ofApp::touchMoved(ofTouchEventArgs & touch){
     }
     else
     {
-
+        
         speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
     }
 }
@@ -379,7 +495,7 @@ void ofApp::touchUp(ofTouchEventArgs & touch){
 
 //--------------------------------------------------------------
 void ofApp::touchDoubleTap(ofTouchEventArgs & touch){
-
+    
 }
 
 //--------------------------------------------------------------
@@ -387,87 +503,29 @@ void ofApp::touchCancelled(ofTouchEventArgs & touch){
     
 }
 
-void ofApp::spin()
-{
-    cout << " spin " << endl;
-    if(isConnected)
-    {
-        string spinStr = "spin_control";
-        
-#ifdef UDP
-        client.Send(spinStr.c_str(), spinStr.size());
-#else
-        client.send(spinStr);
-#endif
-    }
-}
-
-void ofApp::disconnect()
-{
-    cout << " disconnect " << endl;
-    if(isConnected)
-    {
-        isConnected = false;
-        string disconnectStr = "disconnect_control";
-        
-#ifdef UDP
-        client.Send(disconnectStr.c_str(), disconnectStr.size());
-        client.Close();
-        
-#else
-        client.send(disconnectStr);
-        client.close();
-#endif
-    }
-}
-
-void ofApp::reconnect()
-{
-    cout << " reconnect " << endl;
-#ifdef UDP
-    client.Create();
-    client.Connect("192.168.42.1",3000);
-    client.SetNonBlocking(true);
-    
-    // now register
-    string regStr = "register_control";
-    client.Send("register_control", regStr.size());
-    
-#else
-    
-    client.setup("192.168.42.1",3000);
-    
-    // now register
-    string regStr = "register_control";
-    client.send("register_control");
-    
-    char buf[8];
-    client.receiveRawMsg(&buf[0], 8);
-    int num = static_cast<int>(buf[0]);
-    
-    serverId = num;
-    
-#endif
-    
-    isConnected = true;
-}
 
 //--------------------------------------------------------------
 void ofApp::lostFocus(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::gotFocus(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::gotMemoryWarning(){
-
+    
 }
 
 //--------------------------------------------------------------
 void ofApp::deviceOrientationChanged(int newOrientation){
-
+    
 }
+
+void ofApp::exit(){
+    
+}
+
+#endif

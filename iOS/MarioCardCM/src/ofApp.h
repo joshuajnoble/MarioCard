@@ -1,4 +1,15 @@
+
 #pragma once
+
+#include "ofxNetwork.h"
+#include "ofMain.h"
+
+#ifdef ANDROID
+
+#include "ofxAndroid.h"
+#include "ofxAccelerometer.h"
+
+#else
 
 #include "ofxiOS.h"
 #include "ofxCoreMotion.h"
@@ -6,7 +17,7 @@
 #include "ofxNetwork.h"
 #include "SimpleSprite.h"
 
-#define UDP
+#endif
 
 class arcPoint {
 public:
@@ -14,43 +25,68 @@ public:
     ofColor fill;
 };
 
-class ofApp : public ofxiOSApp {
-	
-    public:
-        void setup();
-        void update();
-        void draw();
-        void exit();
-	
-        void touchDown(ofTouchEventArgs & touch);
-        void touchMoved(ofTouchEventArgs & touch);
-        void touchUp(ofTouchEventArgs & touch);
-        void touchDoubleTap(ofTouchEventArgs & touch);
-        void touchCancelled(ofTouchEventArgs & touch);
 
-        void lostFocus();
-        void gotFocus();
-        void gotMemoryWarning();
-        void deviceOrientationChanged(int newOrientation);
+#ifdef ANDROID
+class ofApp : public ofxAndroidApp{
+#else
+class ofApp : public ofxiOSApp {
+#endif
+    
+public:
+    
+    void setup();
+    void update();
+    void draw();
+    
     
     // these are comm methods for the server
     void disconnect();
     void reconnect();
     void spin();
     
+#ifdef ANDROID
+    
+    void keyPressed(int key);
+    void keyReleased(int key);
+    void windowResized(int w, int h);
+    
+    void touchDown(int x, int y, int id);
+    void touchMoved(int x, int y, int id);
+    void touchUp(int x, int y, int id);
+    void touchDoubleTap(int x, int y, int id);
+    void touchCancelled(int x, int y, int id);
+    
+    void pause();
+    void stop();
+    void resume();
+    void reloadTextures();
+    void swipe(ofxAndroidSwipeDir swipeDir, int id);
+    bool backPressed();
+    void okPressed();
+    void cancelPressed();
+    
+#else
+    
     ofxCoreMotion coreMotion;
+    void touchDown(ofTouchEventArgs & touch);
+    void touchMoved(ofTouchEventArgs & touch);
+    void touchUp(ofTouchEventArgs & touch);
+    void touchDoubleTap(ofTouchEventArgs & touch);
+    void touchCancelled(ofTouchEventArgs & touch);
+    
+    void lostFocus();
+    void gotFocus();
+    void gotMemoryWarning();
+    void deviceOrientationChanged(int newOrientation);
+    void exit();
+    
+#endif
+    
     
     int left, right;
     
-#ifdef UDP
     ofxUDPManager client;
-#endif
-
-#ifdef TCP
-    int serverId;
-    ofxTCPClient client;
-#endif
-
+    
     uint64_t lastSend;
     bool connected;
     
@@ -70,6 +106,5 @@ class ofApp : public ofxiOSApp {
     SimpleSprite disconnectSprite, reconnectSprite, spinSprite;
     
     float keepAliveTimer;
+    
 };
-
-
