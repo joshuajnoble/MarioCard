@@ -10,6 +10,7 @@ WiFiUDP udp;
 
 //#define DEBUGGING 
 
+char colorData = ' ';
 char *commandBuffer;
 char *sendBuffer;
 char spin[7] = {'d', 'o', '_', 's', 'p', 'i', 'n'};
@@ -87,13 +88,21 @@ void loop() {
       Serial.println(recvTotal);
 
 #else
-      
-    char c = Serial.read(); // only ever 1 char
-    udp.beginPacket(cartServer, 3000);
-    char color[7] = "color:";
-    color[6] = c;
-    udp.write(&color[0]);
-    udp.endPacket();
+
+    while(Serial.available())
+    {
+      if(Serial.readBytesUntil(';', &colorData, 1))
+      {
+        if(isalpha(colorData))
+        {
+          udp.beginPacket(cartServer, 3000);
+          char color[7] = "color:";
+          color[6] = colorData;
+          udp.write(&color[0]);
+          udp.endPacket();
+        }
+      }
+    }
 
 #endif
    
@@ -111,28 +120,6 @@ void loop() {
     {
       return; // something went wrong?
     }
-
-     // this is a bad hack
-    /*int ii = 0;
-    char *d = &commandBuffer[0];
-    while ( *d != 'd' && ii < cb ) {
-      ++d;
-      ii++;
-    }
-
-    bool matchesSpin = false;
-    int loopthrough = 0;
-    const int minLengthAllowable = 4; // I need this because for some reason on my compiler I can't successfully compare 7 and 5??
-    if (*d == 'd') {
-      while ( *d == spin[loopthrough] ) {
-        loopthrough++;
-        ++d;
-      }
-    }
-
-    if ( loopthrough > minLengthAllowable  ) {
-      matchesSpin = true;
-    }*/
 
     commandBuffer[cb] = '\0';
 
