@@ -1,15 +1,25 @@
-#pragma once
 
-#include "ofMain.h"
-#include "ofxAndroid.h"
+#pragma once
+#define ANDROID
+
+#include "SimpleSprite.h"
 #include "ofxNetwork.h"
-<<<<<<< HEAD
-<<<<<<< HEAD
+#include "ofMain.h"
+
+#ifdef ANDROID
+
+#include "ofxAndroid.h"
 #include "ofxAccelerometer.h"
-=======
->>>>>>> 96791d33272d9a0bd23bf02ba6b2787c6994f005
-=======
->>>>>>> faae088f9b08b1efeb0d1ac07caeae47f024ee46
+
+#else
+
+#include "ofxiOS.h"
+#include "ofxCoreMotion.h"
+#include "ofxiOSExtras.h"
+#include "ofxNetwork.h"
+#include "SimpleSprite.h"
+
+#endif
 
 class arcPoint {
 public:
@@ -18,50 +28,88 @@ public:
 };
 
 
+#ifdef ANDROID
 class ofApp : public ofxAndroidApp{
-	
-	public:
-		
-		void setup();
-		void update();
-		void draw();
-		
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void windowResized(int w, int h);
+#else
+class ofApp : public ofxiOSApp {
+#endif
 
-		void touchDown(int x, int y, int id);
-		void touchMoved(int x, int y, int id);
-		void touchUp(int x, int y, int id);
-		void touchDoubleTap(int x, int y, int id);
-		void touchCancelled(int x, int y, int id);
-		void swipe(ofxAndroidSwipeDir swipeDir, int id);
+public:
 
-		void pause();
-		void stop();
-		void resume();
-		void reloadTextures();
-
-		bool backPressed();
-		void okPressed();
-		void cancelPressed();
+    void setup();
+    void update();
+    void draw();
 
 
-	    int left, right;
-	    ofxUDPManager client;
+    // these are comm methods for the server
+    void disconnect();
+    void reconnect();
+    void spin();
 
-	    bool connected;
+#ifdef ANDROID
 
-	    float speed;
-	    bool updateFlag;
+    void keyPressed(int key);
+    void keyReleased(int key);
+    void windowResized(int w, int h);
 
-	    ofPolyline arc;
-	    deque<arcPoint> arcPoints;
+    void touchDown(int x, int y, int id);
+    void touchMoved(int x, int y, int id);
+    void touchUp(int x, int y, int id);
+    void touchDoubleTap(int x, int y, int id);
+    void touchCancelled(int x, int y, int id);
 
-	    ofMesh mesh;
-	    ofImage carIcon;
+    void pause();
+    void stop();
+    void resume();
+    void reloadTextures();
+    void swipe(ofxAndroidSwipeDir swipeDir, int id);
+    bool backPressed();
+    void okPressed();
+    void cancelPressed();
 
-	    ofVec3f accel;
-	    string udpMessage;
+    ofVec3f accel;
+
+#else
+
+    ofxCoreMotion coreMotion;
+    void touchDown(ofTouchEventArgs & touch);
+    void touchMoved(ofTouchEventArgs & touch);
+    void touchUp(ofTouchEventArgs & touch);
+    void touchDoubleTap(ofTouchEventArgs & touch);
+    void touchCancelled(ofTouchEventArgs & touch);
+
+    void lostFocus();
+    void gotFocus();
+    void gotMemoryWarning();
+    void deviceOrientationChanged(int newOrientation);
+    void exit();
+
+#endif
+
+
+    int left, right;
+
+    ofxUDPManager client;
+
+    uint64_t lastSend;
+
+    float speed;
+    bool updateFlag;
+
+    ofPolyline arc;
+    deque<arcPoint> arcPoints;
+
+    ofMesh mesh;
+    ofImage carIcon;
+    string udpMessage;
+
+    bool isConnected;
+    bool mouseDown;
+
+    ofTrueTypeFont fontface;
+
+    SimpleSprite disconnectSprite, reconnectSprite, spinSprite;
+
+    float keepAliveTimer;
 
 };

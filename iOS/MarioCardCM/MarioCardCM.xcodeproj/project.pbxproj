@@ -309,6 +309,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0600;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = K9RER6CJAH;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "MarioCardCM" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -407,11 +412,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEVELOPMENT_TEAM = K9RER6CJAH;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ofxiOS_Prefix.pch;
 				"GCC_WARN_64_TO_32_BIT_CONVERSION[arch=*64]" = NO;
 				INFOPLIST_FILE = "ofxiOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 			};
@@ -420,11 +426,12 @@
 		1D6058950D05DD3E006BFB54 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = K9RER6CJAH;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ofxiOS_Prefix.pch;
 				"GCC_WARN_64_TO_32_BIT_CONVERSION[arch=*64]" = NO;
 				INFOPLIST_FILE = "ofxiOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				VALID_ARCHS = "$(ARCHS_STANDARD)";
 			};

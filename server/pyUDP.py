@@ -10,6 +10,9 @@ from threading import RLock
 from threading import Thread
 
 
+#### TO TRY: remove globals ala http://codereview.stackexchange.com/questions/55680/adding-a-timeout-to-an-udp-socket-server
+
+
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 # Listen on port 3000 (to all IP addresses on this system)
 listen_addr = ("", 3000)
@@ -312,17 +315,21 @@ def keep_alive_cart(addr):
 	for c in cart_to_controller:
 		if(c['cart'].addr == addr):
 			c['cart'].timestamp = time.time()
-		if(time.time() - c['cart'].timestamp > 5.0):
-			clear_joint(addr, None)
-			
-def keep_alive_controller(addr):
+	# #prune the list
+	# for c in carts:
+	# 	if(time.time() - c.timestamp > 5.0):
+	# 		remove_cart(c.addr)
+	# 		remove_pair(c.addr)
 
+def keep_alive_controller(addr):
 	for c in cart_to_controller:
 		if(c['controller'].addr == addr):
 			c['controller'].timestamp = time.time()
-		if(time.time() - c['controller'].timestamp > 5.0):
-			clear_joint(None, addr)
-
+	# #prune the list
+	# for c in controllers:
+	# 	if(time.time() - c.timestamp > 5.0):
+	# 		remove_controller(c.addr)
+	# 		remove_pair(c.addr)
 
 
 ##############################################################################

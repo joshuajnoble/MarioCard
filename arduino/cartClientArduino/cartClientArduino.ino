@@ -1,4 +1,4 @@
-// color sensor 
+// color sensor
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
 
@@ -23,21 +23,27 @@
 #define GREEN_LED 22
 #define YELLOW_LED 14
 
+char spin[7] = {'d', 'o', '_', 's', 'p', 'i', 'n'};
+char receiveBuffer[16];
+char *spinStr = "do_spin";
+
+#define DEBUGGING
+
 //////////////////////////////////////////////////////////////////
 // Color Sensor
 //////////////////////////////////////////////////////////////////
 
 
 typedef struct {
-    double r;       // percent
-    double g;       // percent
-    double b;       // percent
+  double r;       // percent
+  double g;       // percent
+  double b;       // percent
 } rgb;
 
 typedef struct {
-    double h;       // angle in degrees
-    double s;       // percent
-    double v;       // percent
+  double h;       // angle in degrees
+  double s;       // percent
+  double v;       // percent
 } hsv;
 
 
@@ -49,6 +55,7 @@ char colorNames[] = {'p', 'b', 'y', 'o', 'g' };
 char lastFoundColor;
 
 bool lastReqResponded = false;
+bool hasCompleteMessage = false;
 
 const int MESSAGE_SIZE = 7;
 char inBuf[9];
@@ -56,27 +63,29 @@ char outBuf[128];
 uint8_t outBufInd = 0;
 
 uint16_t left = 127, right = 127;
+int byteCount = 0;
 
 void setup()
 {
 
-//  while(!Serial1) { // wait for Serial1
-//     Serial1.begin(115200);
-//  }
+#ifdef DEBUGGING
+  
+  Serial.begin(115200);
+#endif
 
   Serial1.begin(115200);
-  
+
   // set up the motor driver
-  pinMode(PWML,OUTPUT);
-  pinMode(LBACKWARD,OUTPUT);
-  pinMode(LFORWARD,OUTPUT);
-  pinMode(PWMR,OUTPUT);
-  pinMode(RBACKWARD,OUTPUT);
-  pinMode(RFORWARD,OUTPUT);
-  pinMode(STBY,OUTPUT);
-  
-  digitalWrite(PWML, HIGH);
-  digitalWrite(PWMR, HIGH);
+  pinMode(PWML, OUTPUT);
+  pinMode(LBACKWARD, OUTPUT);
+  pinMode(LFORWARD, OUTPUT);
+  pinMode(PWMR, OUTPUT);
+  pinMode(RBACKWARD, OUTPUT);
+  pinMode(RFORWARD, OUTPUT);
+  pinMode(STBY, OUTPUT);
+
+  digitalWrite(PWML, LOW);
+  digitalWrite(PWMR, LOW);
 
   pinMode(GREEN_LED, OUTPUT);
   pinMode(YELLOW_LED, OUTPUT);
@@ -84,18 +93,13 @@ void setup()
   pinMode(8, OUTPUT);
   digitalWrite(8, HIGH);
 
-  //Serial1.println(" start up ");
-
-  
 }
-
-
 void loop()
 {
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // colors
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
+/*
   uint16_t clear, red, green, blue;
   //delay(3);
   tcs.getRawData(&red, &green, &blue, &clear);
@@ -110,97 +114,158 @@ void loop()
   rgb inColor = { (int) r, (int) g, (int) b };
   hsv outColor = rgb2hsv(inColor);
 
-  if ( clear > 100 && clear < 900 && outColor.s > 0.25)
-//  if ( outColor.s > 0.25)
+  if ( clear > 200 && clear < 900 && outColor.s > 0.25)
+    //  if ( outColor.s > 0.25)
   {
     for ( int i = 0; i < 5; i++)
     {
       if (fabs(hues[i] - outColor.h) < 20.0)
       {
-//        if(lastFoundColor != colorNames[i]) 
-//        {
-          Serial1.println(colorNames[i]);
-          // wait just a second to get the serial clear
-          delay(50);
-//        }
-//        lastFoundColor = colorNames[i];
+        Serial1.println(colorNames[i]);
+        // wait just a second to get the serial clear
+        delay(50);
       }
     }
   }
+*/
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // esp comm loop
   ////////////////////////////////////////////////////////////////////////////////////////////////
-  
-    if (Serial1.available() > 6) {
 
-      char input[MESSAGE_SIZE];
-      byte size = Serial1.readBytes(input, MESSAGE_SIZE);
-     
-      // Read each command pair
-      char* command = strchr(input, ':');
-      if (command != 0)
-      {
-          left = atoi(&input[0]);
-          ++command;
-          right = atoi(command);
-  
-          // if it's crap, throw it out
-          if( left < 255 && left > 0 && right < 255 && right > 0)
-          {
-            setMotors(left, right);
-          }
+  if(Serial1.available())
+  {
+    while (Serial1.available())
+    {
+      char c = Serial1.read();
+      if(byteCount < 15) {
+        receiveBuffer[byteCount] = c;
       }
+      if( c == ';' )
+      {
+        hasCompleteMessage = true;
+      }
+      byteCount++;
+    }
+  }
+
+  if(hasCompleteMessage)
+  {
+#ifdef DEBUGGING
+    Serial.print(" rcvbuff is ");
+    Serial.print(receiveBuffer);
+    Serial.print(" byteCount is ");
+    Serial.println(byteCount);
+#endif
+    if (byteCount > 2) // do we have enough bytes
+    {
+      receiveBuffer[byteCount] = '\0';
   
-      // rest is garbage, clear it
-      while(Serial1.available()) {
-        Serial1.read();
+      if (strstr(receiveBuffer, spinStr))
+      {
+        setMotors(255, 0); // we're going to spin
+        delay(3000);
+        setMotors(127, 127);
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
+      }
+      else if(checkValidMessage(&receiveBuffer[0], byteCount))
+      {
+        char *rb = &receiveBuffer[0];
+        while (!isdigit( (int) *rb) && rb != receiveBuffer[byteCount]) {
+          *rb = ' ';
+          ++rb;
+        }
+
+        // Read each command pair
+        char* command = strchr(receiveBuffer, ':');
+        if (command != 0)
+        {
+          left = constrain(atoi(&receiveBuffer[0]), 0, 254);
+          ++command;
+          right = constrain(atoi(command), 0, 254);
+#ifdef DEBUGGING
+          Serial.print(left);
+          Serial.print(" ");
+          Serial.println(right);
+#endif
+          setMotors(left, right);
+        }
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
+      }
+      else if( byteCount > 6 )
+      {
+        byteCount = 0;
+        memset(&receiveBuffer[0], 0, 16);
       }
     }
+
+    hasCompleteMessage = false; // reset
+  }
 }
 
+bool checkValidMessage( char *message, int len )
+{
+  
+  if(len < 3)
+  {
+#ifdef DEBUGGING
+    Serial.print("not long enough");
+#endif
+    return false;
+  }
+  if(strchr(message, ':') == NULL)
+  {
+#ifdef DEBUGGING
+    Serial.print("no : ");
+#endif
+    return false;
+  }
+  return true;
+}
 
 hsv rgb2hsv(rgb in)
 {
-    hsv         out;
-    double      min, max, delta;
+  hsv         out;
+  double      min, max, delta;
 
-    min = in.r < in.g ? in.r : in.g;
-    min = min  < in.b ? min  : in.b;
+  min = in.r < in.g ? in.r : in.g;
+  min = min  < in.b ? min  : in.b;
 
-    max = in.r > in.g ? in.r : in.g;
-    max = max  > in.b ? max  : in.b;
+  max = in.r > in.g ? in.r : in.g;
+  max = max  > in.b ? max  : in.b;
 
-    out.v = max;
-    delta = max - min;
-    if (delta < 0.00001)
-    {
-        out.s = 0;
-        out.h = 0; // undefined, maybe nan?
-        return out;
-    }
-    if( max > 0.0 ) {
-        out.s = (delta / max);                  // s
-    } else {
-        // if max is 0, then r = g = b = 0 s = 0, v is undefined
-        out.s = 0.0;
-        out.h = NAN;
-        return out;
-    }
-    if( in.r >= max ) {                         
-        out.h = ( in.g - in.b ) / delta;        // between yellow & magenta
-    } else if( in.g >= max ) {
-        out.h = 2.0 + ( in.b - in.r ) / delta;  // between cyan & yellow
-    } else{
-        out.h = 4.0 + ( in.r - in.g ) / delta;  // between magenta & cyan
-    }
-    out.h *= 60.0;                              // degrees
-
-    if( out.h < 0.0 ) {
-        out.h += 360.0;
-    }
+  out.v = max;
+  delta = max - min;
+  if (delta < 0.00001)
+  {
+    out.s = 0;
+    out.h = 0; // undefined, maybe nan?
     return out;
+  }
+  if ( max > 0.0 ) {
+    out.s = (delta / max);                  // s
+  } else {
+    // if max is 0, then r = g = b = 0 s = 0, v is undefined
+    out.s = 0.0;
+    out.h = NAN;
+    return out;
+  }
+  if ( in.r >= max ) {
+    out.h = ( in.g - in.b ) / delta;        // between yellow & magenta
+  } else if ( in.g >= max ) {
+    out.h = 2.0 + ( in.b - in.r ) / delta;  // between cyan & yellow
+  } else {
+    out.h = 4.0 + ( in.r - in.g ) / delta;  // between magenta & cyan
+  }
+  out.h *= 60.0;                              // degrees
+
+  if ( out.h < 0.0 ) {
+    out.h += 360.0;
+  }
+  return out;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -208,10 +273,10 @@ hsv rgb2hsv(rgb in)
 //////////////////////////////////////////////////////////////////
 
 void setMotors(uint8_t left, uint8_t right)
-{ 
+{
 
   // set motor intensity (pwm)
-  
+
   if (left == 127) {
     digitalWrite(PWML, LOW);
   } else {
@@ -225,7 +290,7 @@ void setMotors(uint8_t left, uint8_t right)
   }
 
   // set h-bridge direction (bool)
-  
+
   if (left > 127) {
     digitalWrite(LFORWARD, HIGH);
     digitalWrite(LBACKWARD, LOW);
@@ -238,13 +303,13 @@ void setMotors(uint8_t left, uint8_t right)
   if (right < 127) {
     digitalWrite(RBACKWARD, LOW);
     digitalWrite(RFORWARD, HIGH);
-  } 
+  }
   // RIGHT BACKWARD
   else {
     digitalWrite(RBACKWARD, HIGH);
     digitalWrite(RFORWARD, LOW);
   }
-  
+
 }
 
 
