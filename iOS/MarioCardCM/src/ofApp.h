@@ -82,6 +82,8 @@ public:
     
 #endif
     
+    void sendCMMessage();
+    void sendNonCMMessage();
     
     int left, right;
     
@@ -89,12 +91,15 @@ public:
     
     uint64_t lastSend;
     bool connected;
+    float steer;
     
     float speed;
     bool updateFlag;
     
     ofPolyline arc;
     deque<arcPoint> arcPoints;
+    
+    bool isUsingCM;
     
     ofMesh mesh;
     ofImage carIcon;
@@ -103,7 +108,7 @@ public:
     bool isConnected;
     bool mouseDown;
     
-    SimpleSprite disconnectSprite, reconnectSprite, spinSprite;
+    SimpleSprite disconnectSprite, reconnectSprite, spinSprite, coremotionSprite;
     
     float keepAliveTimer;
     

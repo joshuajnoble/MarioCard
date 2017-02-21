@@ -27,7 +27,7 @@ char spin[7] = {'d', 'o', '_', 's', 'p', 'i', 'n'};
 char receiveBuffer[16];
 char *spinStr = "do_spin";
 
-#define DEBUGGING
+//#define DEBUGGING
 
 //////////////////////////////////////////////////////////////////
 // Color Sensor
@@ -99,7 +99,7 @@ void loop()
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // colors
   ////////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
   uint16_t clear, red, green, blue;
   //delay(3);
   tcs.getRawData(&red, &green, &blue, &clear);
@@ -114,20 +114,38 @@ void loop()
   rgb inColor = { (int) r, (int) g, (int) b };
   hsv outColor = rgb2hsv(inColor);
 
-  if ( clear > 200 && clear < 900 && outColor.s > 0.25)
+#ifdef DEBUGGING
+  Serial.print(outColor.h);
+  Serial.print(" ");
+  Serial.print(outColor.s);
+  Serial.print(" ");
+  Serial.print(outColor.v);
+  Serial.print(" ");
+  Serial.print(clear);
+  Serial.println(" ");
+  
+#endif
+
+  if ( outColor.s > 0.28 && clear > 20)
     //  if ( outColor.s > 0.25)
   {
     for ( int i = 0; i < 5; i++)
     {
       if (fabs(hues[i] - outColor.h) < 20.0)
       {
-        Serial1.println(colorNames[i]);
+        Serial1.print(colorNames[i]);
+        Serial1.print(';');
+
+#ifdef DEBUGGING
+  Serial.print(colorNames[i]);
+#endif
+        
         // wait just a second to get the serial clear
         delay(50);
       }
     }
   }
-*/
+
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -12,6 +12,7 @@ static const int maxPitch = 1.1;
 //--------------------------------------------------------------
 void ofApp::setup(){
     connected = false;
+    isUsingCM = true;
     
 #ifdef ANDROID
     ofxAccelerometer.setup();
@@ -92,11 +93,12 @@ void ofApp::setup(){
     spinSprite.setPosition(ofVec2f(20, 100));
     spinSprite.setScale(ofVec2f(100, 30));
     
-    reconnectSprite.setText("reconnect");
-    reconnectSprite.setPosition(ofVec2f(20, 65));
-    reconnectSprite.setScale(ofVec2f(100, 30));
+    coremotionSprite.setText("core motion");
+    coremotionSprite.setPosition(ofVec2f(20, 135));
+    coremotionSprite.setScale(ofVec2f(100, 30));
     
 }
+
 
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -116,57 +118,40 @@ void ofApp::update(){
     right = ofMap(accel.x, -1.1, 1.1, 127, -127);
     
 #else
-    coreMotion.update();
     
-    float pitch = coreMotion.getPitch();
-    pitch = ofClamp(pitch, minPitch, maxPitch);
-    
-    left = ofMap(pitch, minPitch, maxPitch, -127, 127);
-    right = ofMap(pitch, minPitch, maxPitch, 127, -127);
-    
-    // figure out speed and direction from L/R tread
-    //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
-    float steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
+    if(isUsingCM)
+    {
+        
+        coreMotion.update();
+        
+        float pitch = coreMotion.getPitch();
+        pitch = ofClamp(pitch, minPitch, maxPitch);
+        
+        left = ofMap(pitch, minPitch, maxPitch, -127, 127);
+        right = ofMap(pitch, minPitch, maxPitch, 127, -127);
+        
+        // figure out speed and direction from L/R tread
+        //speed = ofMap( left + right, -254, 254, 0.03, -0.03);
+        steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
+    }
+    else
+    {
+        // figure out speed and direction from L/R tread
+        speed = ofMap( left + right, -254, 254, 0.03, -0.03);
+        steer = ofMap(left - right, -254, 254, 0, ofGetWidth());
+    }
     
 #endif
     
     if(isConnected)
     {
-        
-        // send a message over our socket about our speed & position
-        if(ofGetElapsedTimeMillis() - lastSend > 200) // 5hz refresh?
+        if(isUsingCM)
         {
-            lastSend = ofGetElapsedTimeMillis();
-            float trueSteer = left - right;
-            
-            int leftTread = 95 * speed;
-            int rightTread = 95 * speed;
-            
-            const int steerValue = 40;
-            
-            if(speed > 0.0)
-            {
-                
-                // all the way to the left will be -254, so slow left tread to we steer to left
-                leftTread -= ofMap(trueSteer, -254, 254, -steerValue, steerValue);
-                // all the way to the right will be 254, so slow right tread to we steer to right
-                rightTread -= ofMap(trueSteer, -254, 254, steerValue, -steerValue);
-            }
-            else
-            {
-                // all the way to the left will be -254, so slow left tread to we steer to left
-                leftTread += ofMap(trueSteer, -254, 254, -steerValue, steerValue);
-                // all the way to the right will be 254, so slow right tread to we steer to right
-                rightTread += ofMap(trueSteer, -254, 254, steerValue, -steerValue);
-            }
-            
-            // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
-            stringstream message;
-            message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
-            cout << message.str() << endl;
-            udpMessage = message.str();
-            
-            client.Send(message.str().c_str(), message.str().size());
+            sendCMMessage();
+        }
+        else
+        {
+            sendNonCMMessage();
         }
     }
     
@@ -227,49 +212,63 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    
+    
+    
     // clear
     ofBackground(0, 0, 0);
     
-    ofEnableAlphaBlending();
-    ofSetColor(0, 255, 0);
-    
-    ofPushMatrix();
-    ofTranslate(0, 20);
-    ofRotateX(50);
-    
-    ofSetLineWidth(10);
-    
-    int scale = 60;
-    
-    // use our arc segments to draw boxes that are our 'road'
-    for( int i = 1; i < arcPoints.size(); i++ )
+    if(isUsingCM)
     {
+    
+        ofEnableAlphaBlending();
+        ofSetColor(0, 255, 0);
         
-        float position = arcPoints.at(i).position;
-        float prevPosition = roundf(arcPoints.at(i-1).position * 60) / 60.0;
+        ofPushMatrix();
+        ofTranslate(0, 20);
+        ofRotateX(50);
         
-        ofSetColor(arcPoints.at(i).fill);
-        ofBeginShape();
+        ofSetLineWidth(10);
         
-        ofVertex(arc.getPointAtPercent(prevPosition).x - scale, arc.getPointAtPercent(prevPosition).y);
-        ofVertex(arc.getPointAtPercent(prevPosition).x + scale, arc.getPointAtPercent(prevPosition).y);
-        ofVertex(arc.getPointAtPercent(position).x + scale, arc.getPointAtPercent(position).y);
-        ofVertex(arc.getPointAtPercent(position).x - scale, arc.getPointAtPercent(position).y);
+        int scale = 60;
         
-        ofEndShape();
+        // use our arc segments to draw boxes that are our 'road'
+        for( int i = 1; i < arcPoints.size(); i++ )
+        {
+            
+            float position = arcPoints.at(i).position;
+            float prevPosition = roundf(arcPoints.at(i-1).position * 60) / 60.0;
+            
+            ofSetColor(arcPoints.at(i).fill);
+            ofBeginShape();
+            
+            ofVertex(arc.getPointAtPercent(prevPosition).x - scale, arc.getPointAtPercent(prevPosition).y);
+            ofVertex(arc.getPointAtPercent(prevPosition).x + scale, arc.getPointAtPercent(prevPosition).y);
+            ofVertex(arc.getPointAtPercent(position).x + scale, arc.getPointAtPercent(position).y);
+            ofVertex(arc.getPointAtPercent(position).x - scale, arc.getPointAtPercent(position).y);
+            
+            ofEndShape();
+            
+        }
+        
+        ofPopMatrix();
+        
+        ofSetColor(255, 255, 255);
+        carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
+        
+        ofSetColor(255, 0, 0);
+        ofDrawRectangle(ofGetWidth() - 40, (ofGetHeight()/2), 42, speed * -160);
+        ofSetColor(255, 255, 255);
         
     }
-    
-    ofPopMatrix();
-    
-    ofSetColor(255, 255, 255);
-    carIcon.draw(ofGetWidth()/2 - (carIcon.getWidth()/8), ofGetHeight() - (carIcon.getHeight()/4) - 20, carIcon.getWidth()/4, carIcon.getHeight()/4);
-    
-    //    stringstream ss;
-    //    ss <<  left << " " << right;
-    //
-    //    ofDrawBitmapString(ss.str(), 30, 30);
-    //    ofDrawBitmapString(udpMessage, 30, 50);
+    else
+    {
+        // draw our controls
+        ofSetColor(255, 0, 0);
+        ofDrawRectangle(0, ofGetHeight()/2, ofGetWidth()/2, ofMap(left, -127, 127, -ofGetHeight()/2, ofGetHeight()/2));
+        ofSetColor(0, 0, 255);
+        ofDrawRectangle(ofGetWidth()/2, ofGetHeight()/2, ofGetWidth()/2, ofMap(right, -127, 127, -ofGetHeight()/2, ofGetHeight()/2));
+    }
     
     ofPushMatrix();
     ofTranslate(reconnectSprite.getBounds().x, reconnectSprite.getBounds().y);
@@ -286,9 +285,60 @@ void ofApp::draw(){
     spinSprite.draw();
     ofPopMatrix();
     
-    ofSetColor(255, 0, 0);
-    ofDrawRectangle(ofGetWidth() - 40, (ofGetHeight()/2), 42, speed * -160);
-    ofSetColor(255, 255, 255);
+    ofPushMatrix();
+    ofTranslate(coremotionSprite.getBounds().x, coremotionSprite.getBounds().y);
+    coremotionSprite.draw();
+    ofPopMatrix();
+    
+}
+
+void ofApp::sendCMMessage()
+{
+    // send a message over our socket about our speed & position
+    if(ofGetElapsedTimeMillis() - lastSend > 200) // 5hz refresh?
+    {
+        lastSend = ofGetElapsedTimeMillis();
+        float trueSteer = left - right;
+        
+        int leftTread = 95 * speed;
+        int rightTread = 95 * speed;
+        
+        const int steerValue = 40;
+        
+        if(speed > 0.0)
+        {
+            
+            // all the way to the left will be -254, so slow left tread to we steer to left
+            leftTread -= ofMap(trueSteer, -254, 254, -steerValue, steerValue);
+            // all the way to the right will be 254, so slow right tread to we steer to right
+            rightTread -= ofMap(trueSteer, -254, 254, steerValue, -steerValue);
+        }
+        else
+        {
+            // all the way to the left will be -254, so slow left tread to we steer to left
+            leftTread += ofMap(trueSteer, -254, 254, -steerValue, steerValue);
+            // all the way to the right will be 254, so slow right tread to we steer to right
+            rightTread += ofMap(trueSteer, -254, 254, steerValue, -steerValue);
+        }
+        
+        // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+        stringstream message;
+        message << "speed:" << min(255, max(0, (leftTread + 127))) << ":" << min(255, max(0, (rightTread + 127)));
+        cout << message.str() << endl;
+        udpMessage = message.str();
+        
+        client.Send(message.str().c_str(), message.str().size());
+    }
+}
+
+void ofApp::sendNonCMMessage()
+{
+    stringstream message;
+    // Kart is just listening for 0-255 where 127 = stopped, 0 = full backwards, 255 = full forwards
+    message << (left + 255 / 4) << ":" << (right + 255 / 4);
+    client.Send(message.str().c_str(), message.str().size());
+    updateFlag = false;
+
 }
 
 void ofApp::spin()
@@ -345,7 +395,7 @@ void ofApp::touchDown(int x, int y, int id){
     else if( spinSprite.hitTest(touch) )
     {
         client.Send("do_spin", 7);
-    }
+    })
     else
     {
         speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
@@ -462,10 +512,29 @@ void ofApp::touchDown(ofTouchEventArgs & touch){
     {
         client.Send("do_spin", 7);
     }
+    else if( coremotionSprite.hitTest(touch))
+    {
+        isUsingCM = !isUsingCM;
+    }
     else
     {
-        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
-        mouseDown = true;
+        if(isUsingCM)
+        {
+            speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+            mouseDown = true;
+        }
+        else
+        {
+            if(touch.x < ofGetWidth()/2)
+            {
+                left = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
+            }
+            else
+            {
+                right = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
+            }
+            
+        }
     }
     
 }
@@ -483,8 +552,21 @@ void ofApp::touchMoved(ofTouchEventArgs & touch){
     }
     else
     {
-        
-        speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+        if(isUsingCM)
+        {
+            speed = ofMap(touch.y, 0, ofGetHeight(), 1, -1);
+        }
+        else
+        {
+            if(touch.x < ofGetWidth()/2)
+            {
+                left = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
+            }
+            else
+            {
+                right = ofMap(touch.y, 0, ofGetHeight(), -127, 127);
+            }
+        }
     }
 }
 
