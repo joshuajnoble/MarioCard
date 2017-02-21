@@ -16,7 +16,7 @@ from threading import Thread
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 # Listen on port 3000 (to all IP addresses on this system)
 listen_addr = ("", 3000)
-UDPSock.settimeout(0.1)
+UDPSock.settimeout(0.05)
 UDPSock.bind(listen_addr)
 
 controllers = []
@@ -29,7 +29,7 @@ currentGameEventOwner = ""
 
 SKEW_RIGHT_EVENT = 'o'
 SKEW_LEFT_EVENT = 'g'
-CIRCLE_EVENT = 'm'
+CIRCLE_EVENT = 'p'
 SLOW_DOWN_EVENT = 'r'
 SPEED_UP_EVENT = 'b'
 FLIP_CONTROLS_EVENT = 'y'
@@ -180,16 +180,19 @@ def send_do_spin(address, message):
 def get_color( address, message):
 	global events
 
-	print "color " + str(message)
+	print "color " + str(message) + " " + str(address)
 	eventColor = message.split(':')[1][0]
 	if not eventColor in possible_events:
 		print "bad event"
 		return
 
 	validAddress = False
- 	for joint in cart_to_controller:
-		if(joint['controller'].cart == address):
- 			validAddress = True
+	try:
+ 		for joint in cart_to_controller:
+			if(joint['cart'].addr == address):
+ 				validAddress = True
+	except AttributeError:
+		print "no cart on joint??"
 
 	if not validAddress:
 		print "invalid address"
@@ -244,7 +247,7 @@ def game_update(events, cart_to_controller):
 	events[:] = [event for event in events if time.time() - event.timestamp < 5.0]
 
 	for joint in cart_to_controller:
-		print "sending " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1])) + " " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
+		#print "sending " + str(stringify(joint['mod_speed'][0], joint['mod_speed'][1])) + " " + str(joint['cart'].addr) + " " + str(joint['controller'].addr)
 		UDPSock.sendto(stringify(joint['mod_speed'][0], joint['mod_speed'][1]), joint['cart'].addr)
 
 # game run functions
