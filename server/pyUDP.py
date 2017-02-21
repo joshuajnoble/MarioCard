@@ -183,7 +183,14 @@ def get_color( address, message):
 		print "bad event"
 		return
 
-	 	
+	validAddress = False
+ 	for joint in cart_to_controller:
+		if(joint['controller'].cart == address):
+ 			validAddress = True
+
+	if not validAddress:
+		print "invalid address"
+		return
 
 	exists = False
 
